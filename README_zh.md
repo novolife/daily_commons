@@ -1,5 +1,13 @@
 # Daily Commons Wallpaper
 
+[![Build](https://github.com/novolife/daily_commons/actions/workflows/build.yml/badge.svg)](https://github.com/novolife/daily_commons/actions)
+[![Version](https://img.shields.io/badge/version-1.0.3-blue.svg)](https://github.com/novolife/daily_commons/releases)
+[![Download](https://img.shields.io/badge/download-latest-green.svg)](https://github.com/novolife/daily_commons/releases/latest/download/DailyCommonsWallpaper.exe)
+
+**Other languages:** [English (README.md)](README.md)
+
+---
+
 仿 Bing 壁纸，每日从 [Wikimedia Commons 精选宽屏壁纸](https://commons.wikimedia.org/wiki/Category:Commons_featured_widescreen_desktop_backgrounds) 获取图片并设置为桌面背景。
 
 ## 功能特点
@@ -15,6 +23,8 @@
 ## 快速开始
 
 ### 方式一：使用 EXE（推荐）
+
+**[下载最新版本](https://github.com/novolife/daily_commons/releases/latest/download/DailyCommonsWallpaper.exe)**（v1.0.3）· 或本地打包：
 
 1. 运行 `build.bat` 打包生成 `dist\DailyCommonsWallpaper.exe`
 2. 双击 exe 启动，程序将最小化到系统托盘
@@ -75,7 +85,3 @@ pyinstaller --clean build.spec
 ## License
 
 MIT License - 详见 [LICENSE](LICENSE) 文件。
-
----
-
-**Other languages:** [English (README.md)](README.md)

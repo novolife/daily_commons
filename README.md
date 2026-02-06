@@ -1,5 +1,13 @@
 # Daily Commons Wallpaper
 
+[![Build](https://github.com/novolife/daily_commons/actions/workflows/build.yml/badge.svg)](https://github.com/novolife/daily_commons/actions)
+[![Version](https://img.shields.io/badge/version-1.0.3-blue.svg)](https://github.com/novolife/daily_commons/releases)
+[![Download](https://img.shields.io/badge/download-latest-green.svg)](https://github.com/novolife/daily_commons/releases/latest/download/DailyCommonsWallpaper.exe)
+
+**Other languages:** [简体中文 (README_zh.md)](README_zh.md)
+
+---
+
 Bing-style daily wallpaper from [Wikimedia Commons featured widescreen desktop backgrounds](https://commons.wikimedia.org/wiki/Category:Commons_featured_widescreen_desktop_backgrounds).
 
 ## Features
@@ -15,6 +23,8 @@ Bing-style daily wallpaper from [Wikimedia Commons featured widescreen desktop b
 ## Quick Start
 
 ### Option 1: EXE (Recommended)
+
+**[Download latest release](https://github.com/novolife/daily_commons/releases/latest/download/DailyCommonsWallpaper.exe)** (v1.0.3) · or build locally:
 
 1. Run `build.bat` to generate `dist\DailyCommonsWallpaper.exe`
 2. Double-click to start; app minimizes to system tray
@@ -76,7 +86,3 @@ Images from [Wikimedia Commons](https://commons.wikimedia.org/), under their ori
 ## License
 
 MIT License - see [LICENSE](LICENSE).
-
----
-
-**Other languages:** [简体中文 (README_zh.md)](README_zh.md)
