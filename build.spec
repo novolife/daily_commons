@@ -1,6 +1,8 @@
 # -*- mode: python ; coding: utf-8 -*-
 # PyInstaller build config
 
+from version import __version__
+
 block_cipher = None
 
 a = Analysis(
@@ -32,7 +34,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='DailyCommonsWallpaper',
+    name=f"DailyCommonsWallpaper-{__version__}",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

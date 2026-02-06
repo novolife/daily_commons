@@ -18,7 +18,7 @@ echo.
 echo 若提示 typing 包冲突，请先执行: pip uninstall typing
 echo.
 echo 正在打包...
-pyinstaller --clean build.spec
+pyinstaller --clean build.spec || exit /b 1
 if errorlevel 1 (
     echo.
     echo [错误] 打包失败。若与 typing 冲突，请执行: pip uninstall typing
