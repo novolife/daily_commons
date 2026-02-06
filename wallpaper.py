@@ -5,15 +5,20 @@ Daily Commons Wallpaper - 仿 Bing 壁纸
 """
 
 import json
-import random
+import os
+import queue
 import re
+import subprocess
 import sys
 import threading
 import time
-import webbrowser
 from datetime import datetime
+
+# 壁纸最小分辨率
+MIN_WIDTH = 1920
+MIN_HEIGHT = 1080
 from pathlib import Path
-from urllib.parse import urlencode
+from urllib.parse import quote, urlencode
 from urllib.request import Request, urlopen
 from urllib.error import URLError, HTTPError
 
@@ -118,7 +123,7 @@ def _strip_html(text: str) -> str:
 
 
 def fetch_images_from_commons(limit: int = 200) -> list[dict]:
-    """从 Wikimedia Commons API 获取分类中的图片列表（含元数据）"""
+    """从 Wikimedia Commons API 获取分类中的图片列表（含元数据），过滤分辨率 < 1920x1080"""
     params = {
         "action": "query",
         "generator": "categorymembers",
@@ -126,7 +131,7 @@ def fetch_images_from_commons(limit: int = 200) -> list[dict]:
         "gcmtitle": f"Category:{CATEGORY}",
         "gcmlimit": limit,
         "prop": "imageinfo",
-        "iiprop": "url|extmetadata",
+        "iiprop": "url|size|extmetadata",
         "iiextmetadatafilter": "ObjectName|ImageDescription|Artist|LicenseShortName|Credit",
         "format": "json",
     }
@@ -144,8 +149,12 @@ def fetch_images_from_commons(limit: int = 200) -> list[dict]:
     for page in pages.values():
         if "imageinfo" in page and page["imageinfo"]:
             info = page["imageinfo"][0]
+            w, h = info.get("width", 0), info.get("height", 0)
+            if w < MIN_WIDTH or h < MIN_HEIGHT:
+                continue
             extmeta = info.get("extmetadata", {})
             images.append({
+                "pageid": page.get("pageid"),
                 "title": page.get("title", "").replace("File:", ""),
                 "url": info["url"],
                 "descriptionurl": info.get("descriptionurl", ""),
@@ -193,13 +202,25 @@ def fetch_image_metadata(file_title: str) -> dict:
     return {}
 
 
-def download_image(url: str, filepath: Path) -> bool:
-    """下载图片到本地"""
+def download_image(url: str, filepath: Path, progress_callback=None) -> bool:
+    """下载图片到本地，progress_callback(step, percent) 可选"""
     try:
         req = Request(url, headers={"User-Agent": "DailyCommonsWallpaper/1.0"})
         with urlopen(req, timeout=60) as resp:
-            data = resp.read()
-        filepath.write_bytes(data)
+            total = int(resp.headers.get("Content-Length", 0) or 0)
+            data = []
+            read = 0
+            chunk = 65536
+            while True:
+                b = resp.read(chunk)
+                if not b:
+                    break
+                data.append(b)
+                read += len(b)
+                if progress_callback and total > 0:
+                    pct = min(100, int(read * 100 / total))
+                    progress_callback("downloading", pct)
+        filepath.write_bytes(b"".join(data))
         return True
     except (URLError, HTTPError, OSError):
         return False
@@ -225,18 +246,25 @@ def set_wallpaper(filepath: Path) -> bool:
     return False
 
 
-def get_today_seed() -> int:
-    """基于日期的种子，跨日时选择新图片"""
+def get_date_id() -> int:
+    """基于日期的标识符，确保不同日期对应不同壁纸"""
     return int(datetime.now().strftime("%Y%m%d"))
 
 
+# 大质数用于哈希分布，避免相邻日期选到相同或相邻图片
+_DATE_HASH_PRIME = 2654435761
+
+
 def select_image(images: list[dict], seed: int = None) -> dict:
-    """根据种子选择图片（同一天相同种子得到相同图片）"""
+    """根据种子确定性选择图片，不同种子得到不同图片"""
     if not images:
         return None
-    seed = seed or get_today_seed()
-    rng = random.Random(seed)
-    return rng.choice(images)
+    seed = seed if seed is not None else get_date_id()
+    # 按 pageid 排序确保 API 返回顺序一致
+    sorted_images = sorted(images, key=lambda x: x.get("pageid", 0) or 0)
+    # 种子 -> 确定性索引
+    index = ((seed * _DATE_HASH_PRIME) & 0xFFFFFFFF) % len(sorted_images)
+    return sorted_images[index]
 
 
 def get_file_extension(url: str) -> str:
@@ -263,35 +291,51 @@ def _is_cache_from_today() -> tuple[bool, dict]:
         return False, {}
 
 
-def update_wallpaper() -> bool:
-    """获取并设置当日壁纸。跨日时自动选新图。开机自启时也会检查跨日并更新。"""
+def update_wallpaper(force_refresh: bool = False, progress_callback=None) -> bool:
+    """获取并设置当日壁纸。progress_callback(step, percent) 可选，step: fetching|selecting|downloading|setting|done|error"""
+    def _report(step: str, percent: int = None):
+        if progress_callback:
+            progress_callback(step, percent)
+
     ensure_dir()
-    seed = get_today_seed()
+    date_id = get_date_id()
 
-    # 检查缓存是否是当天的（含跨日判断：缓存日期 != 今天 则需更新）
-    is_today, cache = _is_cache_from_today()
-    if is_today:
-        set_wallpaper(Path(cache["path"]))
-        return True
+    # 检查缓存是否是当天的（手动刷新时跳过，强制拉取新图）
+    if not force_refresh:
+        is_today, cache = _is_cache_from_today()
+        if is_today:
+            set_wallpaper(Path(cache["path"]))
+            return True
+    else:
+        _, cache = _is_cache_from_today()
 
-    images = fetch_images_from_commons(limit=200)
+    _report("fetching", 0)
+    images = fetch_images_from_commons(limit=500)
     if not images:
         if cache and Path(cache.get("path", "")).exists():
             set_wallpaper(Path(cache["path"]))
             return True
         return False
 
-    selected = select_image(images, seed)
+    _report("selecting", 15)
+    # 手动刷新时用时间戳作为额外因子，确保每次选到不同图片
+    select_id = date_id if not force_refresh else (date_id * 1000 + int(time.time()) % 1000)
+    selected = select_image(images, select_id)
     if not selected:
+        _report("error", 0)
         return False
 
     ext = get_file_extension(selected["url"])
-    filename = f"wallpaper_{seed}{ext}"
+    filename = f"wallpaper_{select_id}{ext}"
     filepath = WALLPAPER_DIR / filename
 
-    if not download_image(selected["url"], filepath):
+    def dl_progress(_, pct):
+        _report("downloading", 15 + int(pct * 70 / 100))  # 15-85%
+    if not download_image(selected["url"], filepath, progress_callback=dl_progress):
+        _report("error", 0)
         return False
 
+    _report("setting", 90)
     if set_wallpaper(filepath):
         metadata = selected.get("metadata", {})
         cache_data = {
@@ -300,7 +344,7 @@ def update_wallpaper() -> bool:
             "url": selected["url"],
             "descriptionurl": selected.get("descriptionurl", ""),
             "date": datetime.now().isoformat(),
-            "seed": seed,
+            "date_id": select_id,
             "metadata": {
                 "title": metadata.get("title") or selected["title"],
                 "description": metadata.get("description", ""),
@@ -311,7 +355,9 @@ def update_wallpaper() -> bool:
         }
         with open(CACHE_FILE, "w", encoding="utf-8") as f:
             json.dump(cache_data, f, ensure_ascii=False, indent=2)
+        _report("done", 100)
         return True
+    _report("error", 0)
     return False
 
 
@@ -327,13 +373,19 @@ def get_current_wallpaper_info() -> dict:
     meta = cache.get("metadata", {})
     if not meta and cache.get("title"):
         meta = fetch_image_metadata(cache["title"])
+    # descriptionurl 可能存在于 cache 或 meta 中
+    commons_url = cache.get("descriptionurl") or (meta.get("descriptionurl") if isinstance(meta, dict) else "")
+    if not commons_url and cache.get("title"):
+        # 从 title 拼 Commons 链接
+        fn = quote(cache["title"].replace(" ", "_"))
+        commons_url = f"https://commons.wikimedia.org/wiki/File:{fn}"
     return {
-        "title": meta.get("title") or cache.get("title", ""),
-        "description": meta.get("description", ""),
-        "artist": meta.get("artist", ""),
-        "license": meta.get("license", ""),
-        "credit": meta.get("credit", ""),
-        "url": cache.get("descriptionurl", ""),
+        "title": (meta or {}).get("title") or cache.get("title", ""),
+        "description": (meta or {}).get("description", ""),
+        "artist": (meta or {}).get("artist", ""),
+        "license": (meta or {}).get("license", ""),
+        "credit": (meta or {}).get("credit", ""),
+        "url": commons_url or "https://commons.wikimedia.org/",
     }
 
 
@@ -367,13 +419,34 @@ def run_tray_app():
 
     last_date = datetime.now().date()
     systray_ref = [None]
+    dialog_queue = queue.Queue()
+
+    def _set_hover(text: str):
+        s = systray_ref[0]
+        if s and hasattr(s, "update") and callable(getattr(s, "update")):
+            try:
+                s.update(hover_text=text[:64])
+            except Exception:
+                pass
+
+    def _dialog_worker():
+        """预启动的对话框工作线程，避免在回调中创建新线程"""
+        while True:
+            try:
+                on_complete = dialog_queue.get(timeout=1.0)
+            except queue.Empty:
+                continue
+            _set_hover("下载中...")
+            _run_progress_dialog(on_complete)
 
     def on_change_wallpaper(systray):
-        nonlocal last_date
-        if update_wallpaper():
-            last_date = datetime.now().date()
-            _notify("壁纸已更新", "Daily Commons Wallpaper")
-            _update_hover_text(systray_ref)
+        def on_complete(ok):
+            nonlocal last_date
+            _set_hover("Daily Commons 壁纸")
+            if ok:
+                last_date = datetime.now().date()
+                _update_hover_text(systray_ref)
+        dialog_queue.put(on_complete)
 
     def on_autostart_toggle(systray):
         enabled = not is_autostart_enabled()
@@ -394,9 +467,8 @@ def run_tray_app():
 
     def on_open_commons(systray):
         info = get_current_wallpaper_info()
-        url = info.get("url", "https://commons.wikimedia.org/")
-        if url:
-            webbrowser.open(url)
+        url = info.get("url", "")
+        _open_url(url or "https://commons.wikimedia.org/wiki/Category:Commons_featured_widescreen_desktop_backgrounds")
 
     def _update_hover_text(systray_ref):
         s = systray_ref[0]
@@ -445,6 +517,9 @@ def run_tray_app():
             default_menu_index=0,
         )
         systray_ref[0] = systray
+        # 预启动对话框工作线程（避免在回调中创建线程导致 RuntimeError）
+        dt = threading.Thread(target=_dialog_worker, daemon=True)
+        dt.start()
         # 启动时检查跨日并更新壁纸（含开机自启场景）
         update_wallpaper()
         _update_hover_text(systray_ref)
@@ -456,8 +531,25 @@ def run_tray_app():
         _run_tray_pystray(icon_path, hover_text, last_date, background_check, _update_hover_text)
 
 
+def _open_url(url: str) -> bool:
+    """在默认浏览器中打开 URL（兼容后台/服务环境）"""
+    try:
+        if sys.platform == "win32":
+            os.startfile(url)
+        else:
+            subprocess.run(["xdg-open", url], check=False, capture_output=True)
+        return True
+    except Exception:
+        try:
+            import webbrowser
+            webbrowser.open(url)
+            return True
+        except Exception:
+            return False
+
+
 def _notify(title: str, message: str):
-    """系统通知（infi.systray 无内置 notify，仅更新悬浮提示）"""
+    """系统通知（尽量不使用气泡）"""
     pass
 
 
@@ -471,6 +563,59 @@ def _show_message_box(title: str, message: str):
             pass
 
 
+def _run_progress_dialog(on_complete) -> None:
+    """在当前线程运行带进度条的信息框，同步执行下载（不创建新线程）。"""
+    status_text = {
+        "fetching": "正在获取图片列表...",
+        "selecting": "正在选择图片...",
+        "downloading": "正在下载壁纸...",
+        "setting": "正在设置壁纸...",
+        "done": "壁纸已设置成功",
+        "error": "更新失败，请检查网络连接",
+    }
+
+    import tkinter as tk
+    from tkinter import ttk
+
+    root = tk.Tk()
+    root.title("更换壁纸")
+    root.resizable(False, False)
+    root.geometry("320x140")
+    root.attributes("-topmost", True)
+
+    label = tk.Label(root, text="正在获取图片列表...", font=("Microsoft YaHei", 10))
+    label.pack(pady=(20, 8), padx=20, anchor="w")
+
+    progress = ttk.Progressbar(root, length=280, mode="determinate")
+    progress.pack(pady=8, padx=20, fill="x")
+    progress["value"] = 0
+
+    btn_frame = tk.Frame(root)
+    btn_frame.pack(pady=(16, 12))
+    ok_btn = tk.Button(btn_frame, text="确定", width=8, command=lambda: root.destroy(), state="disabled")
+    ok_btn.pack()
+
+    def progress_cb(step: str, pct: int):
+        label.config(text=status_text.get(step, step))
+        if pct is not None:
+            progress["value"] = pct
+        root.update()
+
+    root.update()
+    try:
+        ok = update_wallpaper(force_refresh=True, progress_callback=progress_cb)
+    except Exception:
+        ok = False
+        progress_cb("error", 0)
+
+    progress["value"] = 100 if ok else 0
+    label.config(text=status_text["done"] if ok else status_text["error"])
+    ok_btn.config(state="normal")
+    on_complete(ok)
+    root.protocol("WM_DELETE_WINDOW", root.destroy)
+    root.mainloop()
+
+
 def _run_tray_pystray(icon_path: str, hover_text: str, last_date, background_check, _update_hover_text):
     """pystray 回退实现"""
     import pystray
@@ -478,14 +623,37 @@ def _run_tray_pystray(icon_path: str, hover_text: str, last_date, background_che
 
     icon = None
     systray_ref = [None]
+    dialog_queue = queue.Queue()
+    downloading_state = [False]
+
+    def _dialog_worker():
+        while True:
+            try:
+                on_complete = dialog_queue.get(timeout=1.0)
+            except queue.Empty:
+                continue
+            downloading_state[0] = True
+            if icon:
+                icon.title = "下载中..."
+
+            def _on_complete(ok):
+                downloading_state[0] = False
+                if ok:
+                    if icon:
+                        icon.title = "Daily Commons 壁纸"
+                        icon.notify("壁纸已更新", "Daily Commons Wallpaper")
+                    _update_hover_text(systray_ref)
+                else:
+                    if icon:
+                        icon.title = "Daily Commons 壁纸"
+
+            _run_progress_dialog(_on_complete)
 
     def on_change_wallpaper(_, __):
-        nonlocal last_date
-        if update_wallpaper():
-            last_date = datetime.now().date()
-            if icon:
-                icon.notify("壁纸已更新", "Daily Commons Wallpaper")
-            _update_hover_text(systray_ref)
+        dialog_queue.put(None)
+
+    def on_change_wallpaper(_, __):
+        refresh_queue.put(None)
 
     autostart_state = [is_autostart_enabled()]
 
@@ -507,21 +675,21 @@ def _run_tray_pystray(icon_path: str, hover_text: str, last_date, background_che
 
     def on_open_commons(_, __):
         info = get_current_wallpaper_info()
-        url = info.get("url", "https://commons.wikimedia.org/")
-        if url:
-            webbrowser.open(url)
+        url = info.get("url", "")
+        _open_url(url or "https://commons.wikimedia.org/wiki/Category:Commons_featured_widescreen_desktop_backgrounds")
 
     def setup(icon_obj):
         nonlocal icon
         icon = icon_obj
         systray_ref[0] = icon
+        threading.Thread(target=_dialog_worker, daemon=True).start()
         update_wallpaper()
         _update_hover_text(systray_ref)
         t = threading.Thread(target=background_check, daemon=True)
         t.start()
 
     menu = pystray.Menu(
-        pystray.MenuItem("立即更换壁纸", on_change_wallpaper, default=True),
+        pystray.MenuItem(lambda _: "下载中..." if downloading_state[0] else "立即更换壁纸", on_change_wallpaper, default=True),
         pystray.MenuItem("开机自启", on_autostart_toggle, checked=lambda _: autostart_state[0]),
         pystray.MenuItem("当前壁纸信息", on_show_info),
         pystray.MenuItem("在 Commons 查看", on_open_commons),
