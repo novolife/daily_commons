@@ -1,5 +1,9 @@
 # -*- mode: python ; coding: utf-8 -*-
-# PyInstaller build config
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent
+sys.path.insert(0, str(ROOT))
 
 from version import __version__
 
@@ -7,9 +11,9 @@ block_cipher = None
 
 a = Analysis(
     ['wallpaper.py'],
-    pathex=[],
+    pathex=[str(ROOT)],
     binaries=[],
-    datas=[('i18n', 'i18n')],
+    datas=[(str(ROOT / 'i18n'), 'i18n')],
     hiddenimports=[
         'pystray._win32', 'PIL', 'PIL._tkinter_finder',
         'infi.systray', 'infi.systray.win32_adapter',
