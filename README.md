@@ -1,6 +1,6 @@
 # Daily Commons Wallpaper
 
-[![Build](https://github.com/novolife/daily_commons/actions/workflows/build.yml/badge.svg)](https://github.com/novolife/daily_commons/actions)
+[![Build](https://github.com/novolife/daily_commons/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/novolife/daily_commons/actions)
 [![Version](https://img.shields.io/badge/version-1.0.3-blue.svg)](https://github.com/novolife/daily_commons/releases)
 [![Download](https://img.shields.io/badge/download-latest-green.svg)](https://github.com/novolife/daily_commons/releases/latest)
 

@@ -27,5 +27,6 @@ jobs:
 
       - name: Verify exe
         run: |
-          if (-not (Test-Path dist\DailyCommonsWallpaper.exe)) { exit 1 }
-          echo Build succeeded
+          $exe = Get-ChildItem dist\DailyCommonsWallpaper*.exe -ErrorAction SilentlyContinue
+          if (-not $exe) { exit 1 }
+          echo Build succeeded: $exe.Name
