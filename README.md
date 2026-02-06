@@ -1,76 +1,82 @@
 # Daily Commons Wallpaper
 
-仿 Bing 壁纸，每日从 [Wikimedia Commons 精选宽屏壁纸](https://commons.wikimedia.org/wiki/Category:Commons_featured_widescreen_desktop_backgrounds) 获取图片并设置为桌面背景。
+Bing-style daily wallpaper from [Wikimedia Commons featured widescreen desktop backgrounds](https://commons.wikimedia.org/wiki/Category:Commons_featured_widescreen_desktop_backgrounds).
 
-## 功能特点
+## Features
 
-- **EXE 独立运行** - 打包成单文件，无需安装 Python
-- **后台托盘** - 最小化到系统托盘，不占用任务栏
-- **开机自启** - 托盘菜单一键开关
-- **跨日自动更换** - 检测日期变化，新的一天自动换新图（基于日期种子）
-- **分辨率过滤** - 仅选取 ≥1920×1080 的图片
-- 从 800+ 张精选宽屏壁纸中选取
+- **Standalone EXE** - Single-file build, no Python required
+- **System tray** - Runs in background, minimal footprint
+- **Auto-start** - Toggle startup with Windows from tray menu
+- **Daily auto-refresh** - Detects date change, fetches new image (date-based seed)
+- **Resolution filter** - Only images ≥1920×1080
+- **i18n** - Follows system language (English, 简体中文)
+- 800+ curated widescreen wallpapers
 
-## 快速开始
+## Quick Start
 
-### 方式一：使用 EXE（推荐）
+### Option 1: EXE (Recommended)
 
-1. 运行 `build.bat` 打包生成 `dist\DailyCommonsWallpaper.exe`
-2. 双击 exe 启动，程序将最小化到系统托盘
-3. 右键托盘图标：
-   - **立即更换壁纸** - 手动换一张
-   - **开机自启** - 勾选后开机自动运行
-   - **退出** - 关闭程序
+1. Run `build.bat` to generate `dist\DailyCommonsWallpaper.exe`
+2. Double-click to start; app minimizes to system tray
+3. Right-click tray icon:
+   - **Change Wallpaper Now** - Manual refresh
+   - **Start with Windows** - Toggle autostart
+   - **Quit** - Exit
 
-### 方式二：Python 运行
+### Option 2: Python
 
 ```bash
 pip install infi.systray pystray Pillow
-python wallpaper.py          # 托盘模式
-python wallpaper.py --once   # 仅运行一次
-python wallpaper.py --once -r  # 随机一张后退出
+python wallpaper.py          # Tray mode
+python wallpaper.py --once   # Run once
+python wallpaper.py --once -r  # Random image, then exit
 ```
 
-## 跨日逻辑
+## Daily Logic
 
-- 程序每 60 秒检测一次日期
-- 当检测到日期变化（跨日）时，自动获取新图片并设置壁纸
-- 同一天内使用相同种子，保证图片一致；新的一天使用新种子，获得新图片
+- Checks date every 60 seconds
+- On date change, fetches and sets new wallpaper
+- Same day = same image (deterministic seed); new day = new image
 
-## 打包说明
+## Build
 
 ```bash
 pip install infi.systray pystray Pillow pyinstaller
-# 若提示 typing 冲突，先执行: pip uninstall typing
+# If typing conflict: pip uninstall typing
 pyinstaller --clean build.spec
 ```
 
-生成的无控制台 exe 位于 `dist\DailyCommonsWallpaper.exe`。
+Output: `dist\DailyCommonsWallpaper.exe` (no console window)
 
-## 文件说明
+## Project Structure
 
-| 文件 | 说明 |
-|------|------|
-| `wallpaper.py` | 主程序 |
-| `build.spec` | PyInstaller 配置 |
-| `build.bat` | 一键打包脚本 |
-| `run_wallpaper.bat` | Python 快速运行 |
-| `LICENSE` | MIT 许可证 |
-| `%USERPROFILE%\.daily_commons_wallpaper\` | 壁纸缓存目录 |
+| File | Description |
+|------|-------------|
+| `wallpaper.py` | Main entry |
+| `core.py` | Fetch, download, update logic |
+| `tray.py` | System tray (infi.systray / pystray) |
+| `config.py` | Constants |
+| `i18n/` | Language files (en.json, zh_CN.json) |
+| `build.spec` | PyInstaller config |
+| `%USERPROFILE%\.daily_commons_wallpaper\` | Cache directory |
 
-## 命令行参数
+## CLI Options
 
-| 参数 | 说明 |
-|------|------|
-| `--tray` | 后台托盘模式（默认） |
-| `--once` | 仅运行一次后退出 |
-| `-r, --random` | 随机选择（配合 --once） |
-| `-n, --count` | 获取图片数量，默认 500 |
+| Option | Description |
+|--------|-------------|
+| `--tray` | Tray mode (default) |
+| `--once` | Run once and exit |
+| `-r, --random` | Random selection (with --once) |
+| `-n, --count` | Image count, default 500 |
 
-## 图片来源
+## Image Source
 
-图片来自 [Wikimedia Commons](https://commons.wikimedia.org/)，遵循各图片的原始许可协议（多为 CC 系列）。
+Images from [Wikimedia Commons](https://commons.wikimedia.org/), under their original licenses (mostly CC).
 
 ## License
 
-MIT License - 详见 [LICENSE](LICENSE) 文件。
+MIT License - see [LICENSE](LICENSE).
+
+---
+
+**Other languages:** [简体中文 (README_zh.md)](README_zh.md)
