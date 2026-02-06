@@ -249,7 +249,38 @@ def run_tray_app():
 
     try:
         from infi.systray import SysTrayIcon
-        systray = SysTrayIcon(
+        from infi.systray.win32_adapter import (
+            CreatePopupMenu, POINT, GetCursorPos, SetForegroundWindow,
+            TrackPopupMenu, PostMessage, TPM_LEFTALIGN, WM_NULL,
+        )
+        import ctypes
+
+        MF_BYCOMMAND = 0
+        MF_CHECKED = 0x0008
+        MF_UNCHECKED = 0x0000
+
+        class SysTrayIconWithAutostartCheckbox(SysTrayIcon):
+            """Subclass that shows checkbox state for autostart menu item."""
+            def _show_menu(self):
+                if self._menu is None:
+                    self._menu = CreatePopupMenu()
+                    self._create_menu(self._menu, self._menu_options)
+                for aid, action in self._menu_actions_by_id.items():
+                    if action is on_autostart_toggle:
+                        flag = MF_CHECKED if is_autostart_enabled() else MF_UNCHECKED
+                        ctypes.windll.user32.CheckMenuItem(
+                            self._menu, aid, MF_BYCOMMAND | flag
+                        )
+                        break
+                pos = POINT()
+                GetCursorPos(ctypes.byref(pos))
+                SetForegroundWindow(self._hwnd)
+                TrackPopupMenu(
+                    self._menu, TPM_LEFTALIGN, pos.x, pos.y, 0, self._hwnd, None
+                )
+                PostMessage(self._hwnd, WM_NULL, 0, 0)
+
+        systray = SysTrayIconWithAutostartCheckbox(
             icon_path or "",
             hover_text,
             menu_options,
@@ -312,6 +343,7 @@ def _run_tray_pystray(icon_path: str, hover_text: str, last_date, background_che
             autostart_state[0] = enabled
             if icon:
                 icon.notify(t("notify_autostart_on") if enabled else t("notify_autostart_off"), APP_NAME)
+                icon.update_menu()
 
     def on_show_info(_, __):
         info = get_current_wallpaper_info()
