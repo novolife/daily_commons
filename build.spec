@@ -2,7 +2,7 @@
 import sys
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent
+ROOT = Path(sys.argv[0]).resolve().parent
 sys.path.insert(0, str(ROOT))
 
 from version import __version__
