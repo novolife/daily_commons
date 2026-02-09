@@ -27,6 +27,6 @@ if errorlevel 1 (
 )
 
 echo.
-echo [成功] 已生成: dist\DailyCommonsWallpaper.exe
+echo [成功] 已生成: dist\DailyCommonsWallpaper-*.exe
 echo.
 pause

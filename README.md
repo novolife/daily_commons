@@ -1,7 +1,7 @@
 # Daily Commons Wallpaper
 
 [![Build](https://github.com/novolife/daily_commons/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/novolife/daily_commons/actions)
-[![Version](https://img.shields.io/badge/version-1.0.4-blue.svg)](https://github.com/novolife/daily_commons/releases)
+[![Version](https://img.shields.io/badge/version-1.0.5-blue.svg)](https://github.com/novolife/daily_commons/releases)
 [![Download](https://img.shields.io/badge/download-latest-green.svg)](https://github.com/novolife/daily_commons/releases/latest)
 
 **Other languages:** [简体中文 (README_zh.md)](README_zh.md)
@@ -26,7 +26,7 @@ Bing-style daily wallpaper from [Wikimedia Commons featured widescreen desktop b
 
 **[Download latest release](https://github.com/novolife/daily_commons/releases/latest)** · or build locally:
 
-1. Run `build.bat` to generate `dist\DailyCommonsWallpaper.exe`
+1. Run `build.bat` to generate `dist\DailyCommonsWallpaper-version.exe`
 2. Double-click to start; app minimizes to system tray
 3. Right-click tray icon:
    - **Change Wallpaper Now** - Manual refresh
@@ -34,6 +34,8 @@ Bing-style daily wallpaper from [Wikimedia Commons featured widescreen desktop b
    - **Quit** - Exit
 
 **Windows 11: tray icon not showing?** The app now uses pystray for better compatibility. If still hidden: ① Click `^` on the taskbar to view overflow icons; ② Settings → Personalization → Taskbar → Other system tray icons, enable this app.
+
+**EXE blocked by antivirus or won't run?** ① Add to antivirus whitelist / restore from Windows Security; ② Run with Python: `python wallpaper.py --tray`; ③ Rebuild locally with `build.bat` (UPX disabled in this repo to reduce false positives).
 
 ```bash
 pip install infi.systray pystray Pillow

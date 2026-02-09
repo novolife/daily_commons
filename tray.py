@@ -1,7 +1,9 @@
 """System tray application - infi.systray and pystray."""
 
+import os
 import queue
 import sys
+import tempfile
 import threading
 import time
 from pathlib import Path
@@ -91,6 +93,32 @@ def create_tray_icon_file() -> Path:
         except Exception:
             pass
     return ICON_FILE
+
+
+def _get_ascii_safe_icon_path() -> str:
+    """返回 ASCII 安全路径的图标文件，供 infi.systray 使用（避免中文路径导致不显示）"""
+    ensure_dir()
+    if not ICON_FILE.exists():
+        create_tray_icon_file()
+    if not ICON_FILE.exists():
+        return ""
+    try:
+        tmp = Path(tempfile.gettempdir()) / "daily_commons_tray.ico"
+        import shutil
+        shutil.copy2(ICON_FILE, tmp)
+        path = str(tmp)
+        if sys.platform == "win32" and any(ord(c) > 127 for c in path):
+            try:
+                import ctypes
+                buf = os.path.abspath(path)
+                ctypes_buf = ctypes.create_unicode_buffer(512)
+                if ctypes.windll.kernel32.GetShortPathNameW(buf, ctypes_buf, 512):
+                    path = ctypes_buf.value
+            except Exception:
+                pass
+        return path if Path(path).exists() else ""
+    except Exception:
+        return ""
 
 
 def _show_message_box(title: str, message: str):
@@ -247,67 +275,63 @@ def run_tray_app():
         (t("menu_view_commons"), None, on_open_commons),
     )
 
-    # Prefer pystray on Windows 11 - uses in-memory icon, better compatibility
-    # infi.systray has known issues: icon path with Unicode, Shell_NotifyIcon on Win11
-    use_pystray = sys.platform == "win32"
-
-    if use_pystray:
+    # 先尝试 infi.systray（用 ASCII 安全路径），再尝试 pystray（内存图标）
+    # 部分 Win11 环境下 pystray 托盘不显示，infi 可能正常
+    if sys.platform == "win32":
+        infi_icon_path = _get_ascii_safe_icon_path() or icon_path
         try:
-            _run_tray_pystray(icon_path, hover_text, last_date, background_check, _update_hover_text)
+            from infi.systray import SysTrayIcon
+            from infi.systray.win32_adapter import (
+                CreatePopupMenu, POINT, GetCursorPos, SetForegroundWindow,
+                TrackPopupMenu, PostMessage, TPM_LEFTALIGN, WM_NULL,
+            )
+            import ctypes
+
+            MF_BYCOMMAND = 0
+            MF_CHECKED = 0x0008
+            MF_UNCHECKED = 0x0000
+
+            class SysTrayIconWithAutostartCheckbox(SysTrayIcon):
+                """Subclass that shows checkbox state for autostart menu item."""
+                def _show_menu(self):
+                    if self._menu is None:
+                        self._menu = CreatePopupMenu()
+                        self._create_menu(self._menu, self._menu_options)
+                    for aid, action in self._menu_actions_by_id.items():
+                        if action is on_autostart_toggle:
+                            flag = MF_CHECKED if is_autostart_enabled() else MF_UNCHECKED
+                            ctypes.windll.user32.CheckMenuItem(
+                                self._menu, aid, MF_BYCOMMAND | flag
+                            )
+                            break
+                    pos = POINT()
+                    GetCursorPos(ctypes.byref(pos))
+                    SetForegroundWindow(self._hwnd)
+                    TrackPopupMenu(
+                        self._menu, TPM_LEFTALIGN, pos.x, pos.y, 0, self._hwnd, None
+                    )
+                    PostMessage(self._hwnd, WM_NULL, 0, 0)
+
+            systray = SysTrayIconWithAutostartCheckbox(
+                infi_icon_path or "",
+                hover_text,
+                menu_options,
+                on_quit=on_quit,
+                default_menu_index=0,
+            )
+            systray_ref[0] = systray
+            dt = threading.Thread(target=_dialog_worker, daemon=True)
+            dt.start()
+            update_wallpaper()
+            _update_hover_text(systray_ref)
+            t2 = threading.Thread(target=background_check, daemon=True)
+            t2.start()
+            systray.start()
             return
         except Exception:
             pass
 
-    try:
-        from infi.systray import SysTrayIcon
-        from infi.systray.win32_adapter import (
-            CreatePopupMenu, POINT, GetCursorPos, SetForegroundWindow,
-            TrackPopupMenu, PostMessage, TPM_LEFTALIGN, WM_NULL,
-        )
-        import ctypes
-
-        MF_BYCOMMAND = 0
-        MF_CHECKED = 0x0008
-        MF_UNCHECKED = 0x0000
-
-        class SysTrayIconWithAutostartCheckbox(SysTrayIcon):
-            """Subclass that shows checkbox state for autostart menu item."""
-            def _show_menu(self):
-                if self._menu is None:
-                    self._menu = CreatePopupMenu()
-                    self._create_menu(self._menu, self._menu_options)
-                for aid, action in self._menu_actions_by_id.items():
-                    if action is on_autostart_toggle:
-                        flag = MF_CHECKED if is_autostart_enabled() else MF_UNCHECKED
-                        ctypes.windll.user32.CheckMenuItem(
-                            self._menu, aid, MF_BYCOMMAND | flag
-                        )
-                        break
-                pos = POINT()
-                GetCursorPos(ctypes.byref(pos))
-                SetForegroundWindow(self._hwnd)
-                TrackPopupMenu(
-                    self._menu, TPM_LEFTALIGN, pos.x, pos.y, 0, self._hwnd, None
-                )
-                PostMessage(self._hwnd, WM_NULL, 0, 0)
-
-        systray = SysTrayIconWithAutostartCheckbox(
-            icon_path or "",
-            hover_text,
-            menu_options,
-            on_quit=on_quit,
-            default_menu_index=0,
-        )
-        systray_ref[0] = systray
-        dt = threading.Thread(target=_dialog_worker, daemon=True)
-        dt.start()
-        update_wallpaper()
-        _update_hover_text(systray_ref)
-        t2 = threading.Thread(target=background_check, daemon=True)
-        t2.start()
-        systray.start()
-    except ImportError:
-        _run_tray_pystray(icon_path, hover_text, last_date, background_check, _update_hover_text)
+    _run_tray_pystray(icon_path, hover_text, last_date, background_check, _update_hover_text)
 
 
 def _run_tray_pystray(icon_path: str, hover_text: str, last_date, background_check, _update_hover_text):
@@ -378,6 +402,12 @@ def _run_tray_pystray(icon_path: str, hover_text: str, last_date, background_che
         update_wallpaper()
         _update_hover_text(systray_ref)
         threading.Thread(target=background_check, daemon=True).start()
+        # Win11 图标常在折叠区，启动时提示用户
+        try:
+            hint = t("notify_tray_hint", "已最小化到托盘，请点击任务栏 ^ 查看图标")
+            icon.notify(hint, APP_NAME)
+        except Exception:
+            pass
 
     def menu_text(_):
         return t("menu_downloading") if downloading_state[0] else t("menu_change_wallpaper")
@@ -390,15 +420,17 @@ def _run_tray_pystray(icon_path: str, hover_text: str, last_date, background_che
         pystray.Menu.SEPARATOR,
         pystray.MenuItem(t("menu_quit"), lambda _, __: icon.stop()),
     )
-    img = Image.open(icon_path) if icon_path and Path(icon_path).exists() else _create_pil_icon()
+    # 始终用内存图标，避免中文路径等导致 Win11 托盘不显示
+    img = _create_pil_icon()
     tray_icon = pystray.Icon(APP_NAME, icon=img, title=hover_text, menu=menu)
     tray_icon.run(setup=setup)
 
 
 def _create_pil_icon():
     from PIL import Image, ImageDraw
-    img = Image.new("RGBA", (64, 64), (70, 130, 180, 255))
+    # Windows 托盘推荐 RGB 格式，16x16 兼容性更好
+    img = Image.new("RGB", (32, 32), (70, 130, 180))
     draw = ImageDraw.Draw(img)
-    draw.rounded_rectangle([8, 8, 56, 56], radius=8, fill=(100, 149, 237))
-    draw.polygon([(32, 20), (50, 50), (14, 50)], fill=(255, 255, 255))
-    return img.resize((32, 32), Image.Resampling.LANCZOS)
+    draw.rounded_rectangle([2, 2, 30, 30], radius=4, fill=(100, 149, 237))
+    draw.polygon([(16, 6), (26, 26), (6, 26)], fill=(255, 255, 255))
+    return img.resize((16, 16), Image.Resampling.LANCZOS)

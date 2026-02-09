@@ -24,5 +24,6 @@
     "info_wallpaper_info": "目前桌布資訊",
     "notify_autostart_on": "開機自啟已開啟",
     "notify_autostart_off": "開機自啟已關閉",
-    "notify_new_day": "新的一天，桌布已更新"
+    "notify_new_day": "新的一天，桌布已更新",
+    "notify_tray_hint": "已最小化到托盤，請點擊工作列 ^ 查看圖示"
 }

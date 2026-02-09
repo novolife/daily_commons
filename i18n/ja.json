@@ -24,5 +24,6 @@
     "info_wallpaper_info": "現在の壁紙情報",
     "notify_autostart_on": "起動時自動開始を有効にしました",
     "notify_autostart_off": "起動時自動開始を無効にしました",
-    "notify_new_day": "新しい日、壁紙を更新しました"
+    "notify_new_day": "新しい日、壁紙を更新しました",
+    "notify_tray_hint": "トレイに最小化しました。タスクバー ^ をクリックしてアイコンを表示"
 }

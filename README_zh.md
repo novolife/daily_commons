@@ -1,7 +1,7 @@
 # Daily Commons Wallpaper
 
 [![Build](https://github.com/novolife/daily_commons/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/novolife/daily_commons/actions)
-[![Version](https://img.shields.io/badge/version-1.0.4-blue.svg)](https://github.com/novolife/daily_commons/releases)
+[![Version](https://img.shields.io/badge/version-1.0.5-blue.svg)](https://github.com/novolife/daily_commons/releases)
 [![Download](https://img.shields.io/badge/download-latest-green.svg)](https://github.com/novolife/daily_commons/releases/latest)
 
 **Other languages:** [English (README.md)](README.md)
@@ -26,7 +26,7 @@
 
 **[下载最新版本](https://github.com/novolife/daily_commons/releases/latest)** · 或本地打包：
 
-1. 运行 `build.bat` 打包生成 `dist\DailyCommonsWallpaper.exe`
+1. 运行 `build.bat` 打包生成 `dist\DailyCommonsWallpaper-版本号.exe`
 2. 双击 exe 启动，程序将最小化到系统托盘
 3. 右键托盘图标：
    - **立即更换壁纸** - 手动换一张
@@ -34,6 +34,14 @@
    - **退出** - 关闭程序
 
 **Windows 11 托盘图标不显示？** 程序已切换为 pystray（兼容性更好）。若仍不显示：① 点击任务栏右下角 `^` 查看隐藏图标；② 设置 → 个性化 → 任务栏 → 其他系统托盘图标，开启本程序。
+
+### 无法运行？被杀毒软件拦截？
+
+若 exe 双击无反应或被 Windows Defender / 杀毒软件删除：
+
+1. **信任/排除**：将 exe 添加到杀毒软件白名单，或从 Windows 安全中心 → 病毒和威胁防护 → 允许的应用 中恢复
+2. **Python 方式运行**：若 exe 无法使用，可直接用 Python 运行：`python wallpaper.py --tray`（需先 `pip install infi.systray pystray Pillow`）
+3. **本地重新打包**：运行 `build.bat` 自行打包，本仓库已禁用 UPX 压缩以减少误报
 
 ```bash
 pip install infi.systray pystray Pillow

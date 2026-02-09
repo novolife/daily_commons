@@ -24,5 +24,6 @@
     "info_wallpaper_info": "Current Wallpaper Info",
     "notify_autostart_on": "Autostart enabled",
     "notify_autostart_off": "Autostart disabled",
-    "notify_new_day": "New day, wallpaper updated"
+    "notify_new_day": "New day, wallpaper updated",
+    "notify_tray_hint": "Minimized to tray. Click taskbar ^ to view icon"
 }
