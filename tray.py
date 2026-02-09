@@ -247,6 +247,17 @@ def run_tray_app():
         (t("menu_view_commons"), None, on_open_commons),
     )
 
+    # Prefer pystray on Windows 11 - uses in-memory icon, better compatibility
+    # infi.systray has known issues: icon path with Unicode, Shell_NotifyIcon on Win11
+    use_pystray = sys.platform == "win32"
+
+    if use_pystray:
+        try:
+            _run_tray_pystray(icon_path, hover_text, last_date, background_check, _update_hover_text)
+            return
+        except Exception:
+            pass
+
     try:
         from infi.systray import SysTrayIcon
         from infi.systray.win32_adapter import (

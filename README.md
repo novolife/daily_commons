@@ -33,7 +33,7 @@ Bing-style daily wallpaper from [Wikimedia Commons featured widescreen desktop b
    - **Start with Windows** - Toggle autostart
    - **Quit** - Exit
 
-### Option 2: Python
+**Windows 11: tray icon not showing?** The app now uses pystray for better compatibility. If still hidden: ① Click `^` on the taskbar to view overflow icons; ② Settings → Personalization → Taskbar → Other system tray icons, enable this app.
 
 ```bash
 pip install infi.systray pystray Pillow
