@@ -12,8 +12,10 @@ from config import APP_NAME, CHECK_INTERVAL, ICON_FILE, WALLPAPER_DIR
 from core import (
     ensure_dir,
     get_current_wallpaper_info,
+    load_config,
     open_folder,
     open_url,
+    save_config,
     update_wallpaper,
 )
 
@@ -21,6 +23,45 @@ from core import (
 def _load_i18n():
     from i18n.loader import t
     return t
+
+
+# 可选语言列表（用于语言菜单和配置）
+_LANGUAGE_OPTIONS: list[tuple[str, str]] = [
+    ("auto", "System / 自动"),
+    ("en", "English"),
+    ("zh_CN", "简体中文"),
+    ("zh_TW", "繁體中文"),
+    ("ja", "日本語"),
+    ("fr", "Français"),
+    ("de", "Deutsch"),
+    ("ru", "Русский"),
+    ("es", "Español"),
+    ("es_MX", "Español (México)"),
+    ("it", "Italiano"),
+    ("vi", "Tiếng Việt"),
+    ("ko", "한국어"),
+    ("ms", "Bahasa Melayu"),
+    ("el", "Ελληνικά"),
+    ("ar", "العربية"),
+]
+
+
+def _set_language_preference(lang_code: str):
+    """保存语言偏好到配置文件。lang_code 为 'auto' / '' / None 时表示跟随系统。"""
+    config = load_config()
+    if not lang_code or lang_code == "auto":
+        config.pop("language", None)
+    else:
+        config["language"] = lang_code
+    save_config(config)
+    # 简单提示，语言变更需要重启后生效
+    try:
+        _show_message_box(
+            "Language",
+            "Language preference saved.\nPlease restart the app to apply.\n\n语言偏好已保存，重启应用后生效。",
+        )
+    except Exception:
+        pass
 
 
 def is_autostart_enabled() -> bool:
@@ -180,6 +221,17 @@ def _run_progress_dialog(on_complete):
 
 
 def run_tray_app():
+    # 根据配置优先设置语言（若未设置则跟随系统）
+    try:
+        from i18n.loader import load as _i18n_load
+
+        cfg = load_config()
+        lang_pref = cfg.get("language")
+        if lang_pref:
+            _i18n_load(lang_pref)
+    except Exception:
+        pass
+
     t = _load_i18n()
     ensure_dir()
     icon_path = str(create_tray_icon_file())
@@ -273,12 +325,23 @@ def run_tray_app():
     if info.get("title"):
         hover_text = (info["title"])[:64]
 
+    # 语言子菜单（infi.systray）
+    lang_menu_options = tuple(
+        (
+            label,
+            None,
+            (lambda systray, code=code: _set_language_preference(code)),
+        )
+        for code, label in _LANGUAGE_OPTIONS
+    )
+
     menu_options = (
         (t("menu_change_wallpaper"), None, on_change_wallpaper),
         (t("menu_autostart"), None, on_autostart_toggle),
         (t("menu_wallpaper_info"), None, on_show_wallpaper_info),
         (t("menu_view_commons"), None, on_open_commons),
         (t("menu_open_cache_folder"), None, on_open_cache_folder),
+        ("Language / 语言", None, lang_menu_options),
     )
 
     # exe 优先 infi.systray（打包后更稳定）；脚本优先 pystray
@@ -427,6 +490,16 @@ def _run_tray_pystray(icon_path: str, hover_text: str, last_date, background_che
     def menu_text(_):
         return t("menu_downloading") if downloading_state[0] else t("menu_change_wallpaper")
 
+    # 语言子菜单（pystray）
+    def _language_menu():
+        items = []
+        for code, label in _LANGUAGE_OPTIONS:
+            def _on_select(_, __, code=code):
+                _set_language_preference(code)
+
+            items.append(pystray.MenuItem(label, _on_select))
+        return pystray.Menu(*items)
+
     menu = pystray.Menu(
         pystray.MenuItem(menu_text, on_change_wallpaper, default=True),
         pystray.MenuItem(t("menu_autostart"), on_autostart_toggle, checked=lambda _: autostart_state[0]),
@@ -434,6 +507,7 @@ def _run_tray_pystray(icon_path: str, hover_text: str, last_date, background_che
         pystray.MenuItem(t("menu_view_commons"), on_open_commons),
         pystray.MenuItem(t("menu_open_cache_folder"), on_open_cache_folder),
         pystray.Menu.SEPARATOR,
+        pystray.MenuItem("Language / 语言", _language_menu()),
         pystray.MenuItem(t("menu_quit"), lambda _, __: icon.stop()),
     )
     # 始终用内存图标，避免中文路径等导致 Win11 托盘不显示
