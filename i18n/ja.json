@@ -1,6 +1,6 @@
 {
-    "app_name": "Daily Commons 壁紙",
-    "app_title": "Daily Commons 壁紙",
+    "app_name": "ウィキメディア・コモンズの日替わり壁紙",
+    "app_title": "ウィキメディア・コモンズの日替わり壁紙",
     "menu_change_wallpaper": "今すぐ壁紙を変更",
     "menu_downloading": "ダウンロード中...",
     "menu_autostart": "Windows起動時に開始",
@@ -24,7 +24,6 @@
     "info_wallpaper_info": "現在の壁紙情報",
     "notify_autostart_on": "起動時自動開始を有効にしました",
     "notify_autostart_off": "起動時自動開始を無効にしました",
-    "notify_new_day": "新しい日、壁紙を更新しました",
     "notify_tray_hint": "トレイに最小化しました。タスクバー ^ をクリックしてアイコンを表示",
     "menu_open_cache_folder": "キャッシュフォルダを開く"
 }

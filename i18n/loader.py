@@ -29,6 +29,17 @@ _WIN_LANGID_MAP = {
     0x1004: "zh_CN",   # zh-SG Singapore
     0x0411: "ja",      # ja-JP Japanese
     0x0409: "en",      # en-US
+    0x040c: "fr",      # fr-FR French
+    0x0407: "de",      # de-DE German
+    0x0419: "ru",      # ru-RU Russian
+    0x0c0a: "es",      # es-ES Spanish (Spain)
+    0x080a: "es_MX",   # es-MX Spanish (Mexico)
+    0x0410: "it",      # it-IT Italian
+    0x042a: "vi",      # vi-VN Vietnamese
+    0x0412: "ko",      # ko-KR Korean
+    0x043e: "ms",      # ms-MY Malay
+    0x0408: "el",      # el-GR Greek
+    0x0401: "ar",      # ar-SA Arabic
 }
 
 
@@ -44,6 +55,8 @@ def _detect_language() -> str:
             prim = lcid & 0x3FF
             if prim == 0x04:  # Chinese
                 return "zh_CN" if lcid == 0x0804 else "zh_TW"
+            if prim == 0x0a:  # Spanish
+                return "es"
             if prim == 0x11:  # Japanese
                 return "ja"
         except Exception:

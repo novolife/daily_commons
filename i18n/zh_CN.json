@@ -1,6 +1,6 @@
 {
-    "app_name": "Daily Commons 壁纸",
-    "app_title": "Daily Commons 壁纸",
+    "app_name": "维基共享每日壁纸",
+    "app_title": "维基共享每日壁纸",
     "menu_change_wallpaper": "立即更换壁纸",
     "menu_downloading": "下载中...",
     "menu_autostart": "开机自启",
@@ -24,7 +24,6 @@
     "info_wallpaper_info": "当前壁纸信息",
     "notify_autostart_on": "开机自启已开启",
     "notify_autostart_off": "开机自启已关闭",
-    "notify_new_day": "新的一天，壁纸已更新",
     "notify_tray_hint": "已最小化到托盘，请点击任务栏 ^ 查看图标",
     "menu_open_cache_folder": "打开缓存文件夹"
 }

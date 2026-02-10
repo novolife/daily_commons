@@ -17,7 +17,7 @@ Bing-style daily wallpaper from [Wikimedia Commons featured widescreen desktop b
 - **Auto-start** - Toggle startup with Windows from tray menu
 - **Daily auto-refresh** - Detects date change, fetches new image (date-based seed)
 - **Resolution filter** - Only images ≥1920×1080
-- **i18n** - Follows system language (English, 简体中文)
+- **i18n** - Follows system language: English, 简体中文, 繁體中文, 日本語, Français, Deutsch, Русский, Español, Italiano, Tiếng Việt, 한국어, Bahasa Melayu, Ελληνικά, العربية
 - 800+ curated widescreen wallpapers
 
 ## Quick Start
@@ -36,7 +36,9 @@ Bing-style daily wallpaper from [Wikimedia Commons featured widescreen desktop b
    - **Open Cache Folder** - Open wallpaper cache folder
    - **Quit** - Exit
 
-**Tray icon not showing?** ① Click `^` on the taskbar to view overflow icons; ② Settings → Personalization → Taskbar → Other system tray icons, enable this app; ③ **For exe downloaded from GitHub**: Right-click → Properties → check "Unblock" → OK (removes internet zone marker).
+**Tray icon not showing?** ① Click `^` on the taskbar to view overflow icons; ② Settings → Personalization → Taskbar → Other system tray icons, enable this app; 
+
+### Option 2: Python
 
 **EXE blocked by antivirus or won't run?** ① Add to antivirus whitelist / restore from Windows Security; ② Run with Python: `python wallpaper.py --tray`; ③ Rebuild locally with `build.bat` (UPX disabled in this repo to reduce false positives).
 
@@ -76,7 +78,7 @@ daily_commons/
 ├── tray.py            # System tray (infi.systray / pystray)
 ├── config.py          # Constants
 ├── version.py         # Version for build
-├── i18n/              # Language files (en, zh_CN, zh_TW, ja)
+├── i18n/              # Language files (en, zh_CN, zh_TW, ja, fr, de, ru, es, it, vi, ko, ms, el, ar)
 ├── docs/              # Documentation
 │   ├── ARCHITECTURE.md
 │   └── ARCHITECTURE_zh.md
