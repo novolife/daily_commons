@@ -30,7 +30,10 @@ Bing-style daily wallpaper from [Wikimedia Commons featured widescreen desktop b
 2. Double-click to start; app minimizes to system tray
 3. Right-click tray icon:
    - **Change Wallpaper Now** - Manual refresh
-   - **Start with Windows** - Toggle autostart
+   - **Start with Windows** - Toggle autostart (checkbox)
+   - **Current Wallpaper Info** - Show title, artist, license
+   - **View on Commons** - Open current image on Wikimedia Commons
+   - **Open Cache Folder** - Open wallpaper cache folder
    - **Quit** - Exit
 
 **Windows 11: tray icon not showing?** The app now uses pystray for better compatibility. If still hidden: ① Click `^` on the taskbar to view overflow icons; ② Settings → Personalization → Taskbar → Other system tray icons, enable this app.

@@ -12,6 +12,7 @@ from config import APP_NAME, CHECK_INTERVAL, ICON_FILE, WALLPAPER_DIR
 from core import (
     ensure_dir,
     get_current_wallpaper_info,
+    open_folder,
     open_url,
     update_wallpaper,
 )
@@ -238,6 +239,9 @@ def run_tray_app():
         url = info.get("url", "")
         open_url(url or "https://commons.wikimedia.org/wiki/Category:Commons_featured_widescreen_desktop_backgrounds")
 
+    def on_open_cache_folder(systray):
+        open_folder(WALLPAPER_DIR)
+
     def _update_hover_text(systray_ref):
         s = systray_ref[0]
         if not s:
@@ -256,9 +260,10 @@ def run_tray_app():
             now = datetime.now().date()
             if now != last_date:
                 last_date = now
-                if update_wallpaper():
-                    pass
-                _update_hover_text(systray_ref)
+            # 每次检查都尝试更新：已有今日壁纸则快速返回；开机时网络未就绪则重试直到成功
+            if update_wallpaper():
+                pass
+            _update_hover_text(systray_ref)
 
     def on_quit(systray):
         pass
@@ -273,12 +278,21 @@ def run_tray_app():
         (t("menu_autostart"), None, on_autostart_toggle),
         (t("menu_wallpaper_info"), None, on_show_wallpaper_info),
         (t("menu_view_commons"), None, on_open_commons),
+        (t("menu_open_cache_folder"), None, on_open_cache_folder),
     )
 
-    # 先尝试 infi.systray（用 ASCII 安全路径），再尝试 pystray（内存图标）
-    # 部分 Win11 环境下 pystray 托盘不显示，infi 可能正常
+    # Win11: pystray 显示正常；Win10: infi.systray 显示正常。按系统版本选择顺序
     if sys.platform == "win32":
+        is_win11 = sys.getwindowsversion().build >= 22000
         infi_icon_path = _get_ascii_safe_icon_path() or icon_path
+
+        if is_win11:
+            try:
+                _run_tray_pystray(icon_path, hover_text, last_date, background_check, _update_hover_text)
+                return
+            except Exception:
+                pass
+
         try:
             from infi.systray import SysTrayIcon
             from infi.systray.win32_adapter import (
@@ -394,6 +408,9 @@ def _run_tray_pystray(icon_path: str, hover_text: str, last_date, background_che
         url = info.get("url", "")
         open_url(url or "https://commons.wikimedia.org/wiki/Category:Commons_featured_widescreen_desktop_backgrounds")
 
+    def on_open_cache_folder(_, __):
+        open_folder(WALLPAPER_DIR)
+
     def setup(icon_obj):
         nonlocal icon
         icon = icon_obj
@@ -417,6 +434,7 @@ def _run_tray_pystray(icon_path: str, hover_text: str, last_date, background_che
         pystray.MenuItem(t("menu_autostart"), on_autostart_toggle, checked=lambda _: autostart_state[0]),
         pystray.MenuItem(t("menu_wallpaper_info"), on_show_info),
         pystray.MenuItem(t("menu_view_commons"), on_open_commons),
+        pystray.MenuItem(t("menu_open_cache_folder"), on_open_cache_folder),
         pystray.Menu.SEPARATOR,
         pystray.MenuItem(t("menu_quit"), lambda _, __: icon.stop()),
     )

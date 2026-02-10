@@ -25,5 +25,6 @@
     "notify_autostart_on": "Autostart enabled",
     "notify_autostart_off": "Autostart disabled",
     "notify_new_day": "New day, wallpaper updated",
-    "notify_tray_hint": "Minimized to tray. Click taskbar ^ to view icon"
+    "notify_tray_hint": "Minimized to tray. Click taskbar ^ to view icon",
+    "menu_open_cache_folder": "Open Cache Folder"
 }

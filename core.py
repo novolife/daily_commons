@@ -51,6 +51,18 @@ def _strip_html(text: str) -> str:
     return re.sub(r"<[^>]+>", "", text).strip()
 
 
+def _fetch_with_retry(req: Request, max_retries: int = 4, base_delay: float = 3.0):
+    """Fetch with retry (for boot when network may not be ready)."""
+    for attempt in range(max_retries):
+        try:
+            with urlopen(req, timeout=30) as resp:
+                return json.loads(resp.read().decode())
+        except (URLError, HTTPError, OSError):
+            if attempt < max_retries - 1:
+                time.sleep(base_delay * (attempt + 1))
+    return None
+
+
 def fetch_images_from_commons(limit: int = 200) -> list[dict]:
     params = {
         "action": "query",
@@ -65,10 +77,8 @@ def fetch_images_from_commons(limit: int = 200) -> list[dict]:
     }
     url = f"{API_URL}?{urlencode(params)}"
     req = Request(url, headers={"User-Agent": "DailyCommonsWallpaper/1.0"})
-    try:
-        with urlopen(req, timeout=30) as resp:
-            data = json.loads(resp.read().decode())
-    except (URLError, HTTPError):
+    data = _fetch_with_retry(req)
+    if not data:
         return []
     images = []
     pages = data.get("query", {}).get("pages", {})
@@ -127,27 +137,31 @@ def fetch_image_metadata(file_title: str) -> dict:
     return {}
 
 
-def download_image(url: str, filepath: Path, progress_callback=None) -> bool:
-    try:
-        req = Request(url, headers={"User-Agent": "DailyCommonsWallpaper/1.0"})
-        with urlopen(req, timeout=60) as resp:
-            total = int(resp.headers.get("Content-Length", 0) or 0)
-            data = []
-            read = 0
-            chunk = 65536
-            while True:
-                b = resp.read(chunk)
-                if not b:
-                    break
-                data.append(b)
-                read += len(b)
-                if progress_callback and total > 0:
-                    pct = min(100, int(read * 100 / total))
-                    progress_callback("downloading", pct)
-        filepath.write_bytes(b"".join(data))
-        return True
-    except (URLError, HTTPError, OSError):
-        return False
+def download_image(url: str, filepath: Path, progress_callback=None, max_retries: int = 3) -> bool:
+    base_delay = 2.0
+    for attempt in range(max_retries):
+        try:
+            req = Request(url, headers={"User-Agent": "DailyCommonsWallpaper/1.0"})
+            with urlopen(req, timeout=60) as resp:
+                total = int(resp.headers.get("Content-Length", 0) or 0)
+                data = []
+                read = 0
+                chunk = 65536
+                while True:
+                    b = resp.read(chunk)
+                    if not b:
+                        break
+                    data.append(b)
+                    read += len(b)
+                    if progress_callback and total > 0:
+                        pct = min(100, int(read * 100 / total))
+                        progress_callback("downloading", pct)
+            filepath.write_bytes(b"".join(data))
+            return True
+        except (URLError, HTTPError, OSError):
+            if attempt < max_retries - 1:
+                time.sleep(base_delay * (attempt + 1))
+    return False
 
 
 def set_windows_wallpaper(filepath: Path) -> bool:
@@ -289,6 +303,21 @@ def get_current_wallpaper_info() -> dict:
         "credit": (meta or {}).get("credit", ""),
         "url": commons_url or "https://commons.wikimedia.org/",
     }
+
+
+def open_folder(path: Path) -> bool:
+    """Open folder in file manager."""
+    try:
+        path = path.resolve()
+        if not path.exists():
+            path.mkdir(parents=True, exist_ok=True)
+        if sys.platform == "win32":
+            os.startfile(str(path))
+        else:
+            subprocess.run(["xdg-open", str(path)], check=False, capture_output=True)
+        return True
+    except Exception:
+        return False
 
 
 def open_url(url: str) -> bool:

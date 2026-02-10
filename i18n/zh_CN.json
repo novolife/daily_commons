@@ -25,5 +25,6 @@
     "notify_autostart_on": "开机自启已开启",
     "notify_autostart_off": "开机自启已关闭",
     "notify_new_day": "新的一天，壁纸已更新",
-    "notify_tray_hint": "已最小化到托盘，请点击任务栏 ^ 查看图标"
+    "notify_tray_hint": "已最小化到托盘，请点击任务栏 ^ 查看图标",
+    "menu_open_cache_folder": "打开缓存文件夹"
 }
