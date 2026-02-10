@@ -1,14 +1,15 @@
 @echo off
 chcp 65001 >nul
+cd /d "%~dp0.."
+set ROOT=%~dp0..
+set ROOT=%ROOT:~0,-1%
+set PYTHON_CMD=python
+set WALLPAPER_SCRIPT=%ROOT%\wallpaper.py
+
 echo ========================================
 echo   Daily Commons Wallpaper - 每日任务设置
 echo ========================================
 echo.
-
-set SCRIPT_DIR=%~dp0
-set SCRIPT_DIR=%SCRIPT_DIR:~0,-1%
-set PYTHON_CMD=python
-set WALLPAPER_SCRIPT=%SCRIPT_DIR%\wallpaper.py
 
 where python >nul 2>&1
 if errorlevel 1 (

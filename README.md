@@ -65,17 +65,42 @@ Output: `dist\DailyCommonsWallpaper.exe` (no console window)
 
 ## Architecture
 
-- **[ARCHITECTURE.md](ARCHITECTURE.md)** - Program flow charts (Mermaid) and function reference
+- **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** Program flow charts (Mermaid) and function reference  
 
-## Project Structure
+## Project Layout
 
-| File | Description |
-|------|-------------|
+```
+daily_commons/
+├── wallpaper.py      # Main entry
+├── core.py            # Fetch, download, update logic
+├── tray.py            # System tray (infi.systray / pystray)
+├── config.py          # Constants
+├── version.py         # Version for build
+├── i18n/              # Language files (en, zh_CN, zh_TW, ja)
+├── docs/              # Documentation
+│   ├── ARCHITECTURE.md
+│   └── ARCHITECTURE_zh.md
+├── scripts/           # Helper batch scripts
+│   ├── run_wallpaper.bat   # Run tray from repo root
+│   ├── run_debug.bat       # Run with console for debugging
+│   └── setup_daily_task.bat # Create daily 8:00 scheduled task
+├── build.bat          # Build exe (run from repo root)
+├── build.spec         # PyInstaller config
+├── requirements.txt
+├── README.md / README_zh.md
+└── .github/workflows/ # CI (build.yml, release.yml)
+```
+
+| File / Dir | Description |
+|------------|-------------|
 | `wallpaper.py` | Main entry |
 | `core.py` | Fetch, download, update logic |
 | `tray.py` | System tray (infi.systray / pystray) |
 | `config.py` | Constants |
-| `i18n/` | Language files (en.json, zh_CN.json) |
+| `i18n/` | Language files (en.json, zh_CN.json, …) |
+| `docs/` | Architecture and flow docs |
+| `scripts/` | Batch helpers (run, debug, scheduled task) |
+| `build.bat` | Build exe (run from project root) |
 | `build.spec` | PyInstaller config |
 | `%USERPROFILE%\.daily_commons_wallpaper\` | Cache directory |
 

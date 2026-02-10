@@ -1,6 +1,6 @@
 @echo off
 chcp 65001 >nul
-cd /d "%~dp0"
+cd /d "%~dp0.."
 echo ========================================
 echo   Daily Commons Wallpaper - 调试模式
 echo ========================================

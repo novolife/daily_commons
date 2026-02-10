@@ -1,5 +1,9 @@
 # Daily Commons Wallpaper - 程序架构与函数说明
 
+**Other language:** [English (ARCHITECTURE.md)](ARCHITECTURE.md)
+
+---
+
 ## 1. 程序流程图
 
 ### 1.1 主流程

@@ -71,17 +71,42 @@ pyinstaller --clean build.spec
 
 ## 架构说明
 
-- **[ARCHITECTURE.md](ARCHITECTURE.md)** - 程序流程图（Mermaid）与函数说明
+- **[docs/ARCHITECTURE_zh.md](docs/ARCHITECTURE_zh.md)** 程序流程图与函数说明  
 
 ## 项目结构
 
-| 文件 | 说明 |
-|------|------|
+```
+daily_commons/
+├── wallpaper.py      # 主入口
+├── core.py            # 获取、下载、更新逻辑
+├── tray.py            # 系统托盘
+├── config.py          # 配置常量
+├── version.py         # 版本号（打包用）
+├── i18n/              # 多语言（en, zh_CN, zh_TW, ja）
+├── docs/              # 文档
+│   └── ARCHITECTURE.md
+├── scripts/           # 辅助脚本
+│   ├── run_wallpaper.bat   # 从仓库根目录运行托盘
+│   ├── run_debug.bat       # 带控制台调试运行
+│   └── setup_daily_task.bat # 创建每日 8:00 计划任务
+├── build.bat          # 打包 exe（在仓库根目录执行）
+├── build.spec         # PyInstaller 配置
+├── requirements.txt
+├── README.md / README_zh.md
+└── .github/workflows/ # CI（build.yml, release.yml）
+```
+
+| 文件/目录 | 说明 |
+|----------|------|
 | `wallpaper.py` | 主入口 |
 | `core.py` | 获取、下载、更新逻辑 |
 | `tray.py` | 系统托盘 |
 | `config.py` | 配置常量 |
-| `i18n/` | 语言文件（en.json, zh_CN.json） |
+| `i18n/` | 语言文件 |
+| `docs/` | 架构与流程图文档 |
+| `scripts/` | 批处理辅助脚本 |
+| `build.bat` | 打包 exe（在项目根目录运行） |
+| `build.spec` | PyInstaller 配置 |
 | `%USERPROFILE%\.daily_commons_wallpaper\` | 壁纸缓存目录 |
 
 ## 命令行参数
