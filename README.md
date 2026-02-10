@@ -36,7 +36,7 @@ Bing-style daily wallpaper from [Wikimedia Commons featured widescreen desktop b
    - **Open Cache Folder** - Open wallpaper cache folder
    - **Quit** - Exit
 
-**Windows 11: tray icon not showing?** The app now uses pystray for better compatibility. If still hidden: ① Click `^` on the taskbar to view overflow icons; ② Settings → Personalization → Taskbar → Other system tray icons, enable this app.
+**Tray icon not showing?** ① Click `^` on the taskbar to view overflow icons; ② Settings → Personalization → Taskbar → Other system tray icons, enable this app; ③ **For exe downloaded from GitHub**: Right-click → Properties → check "Unblock" → OK (removes internet zone marker).
 
 **EXE blocked by antivirus or won't run?** ① Add to antivirus whitelist / restore from Windows Security; ② Run with Python: `python wallpaper.py --tray`; ③ Rebuild locally with `build.bat` (UPX disabled in this repo to reduce false positives).
 

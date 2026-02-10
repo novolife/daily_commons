@@ -281,69 +281,67 @@ def run_tray_app():
         (t("menu_open_cache_folder"), None, on_open_cache_folder),
     )
 
-    # Win11: pystray 显示正常；Win10: infi.systray 显示正常。按系统版本选择顺序
+    # exe 优先 infi.systray（打包后更稳定）；脚本优先 pystray
     if sys.platform == "win32":
-        is_win11 = sys.getwindowsversion().build >= 22000
         infi_icon_path = _get_ascii_safe_icon_path() or icon_path
+        use_infi_first = getattr(sys, "frozen", False)
 
-        if is_win11:
-            try:
-                _run_tray_pystray(icon_path, hover_text, last_date, background_check, _update_hover_text)
-                return
-            except Exception:
-                pass
-
-        try:
-            from infi.systray import SysTrayIcon
-            from infi.systray.win32_adapter import (
-                CreatePopupMenu, POINT, GetCursorPos, SetForegroundWindow,
-                TrackPopupMenu, PostMessage, TPM_LEFTALIGN, WM_NULL,
-            )
-            import ctypes
-
-            MF_BYCOMMAND = 0
-            MF_CHECKED = 0x0008
-            MF_UNCHECKED = 0x0000
-
-            class SysTrayIconWithAutostartCheckbox(SysTrayIcon):
-                """Subclass that shows checkbox state for autostart menu item."""
-                def _show_menu(self):
-                    if self._menu is None:
-                        self._menu = CreatePopupMenu()
-                        self._create_menu(self._menu, self._menu_options)
-                    for aid, action in self._menu_actions_by_id.items():
-                        if action is on_autostart_toggle:
-                            flag = MF_CHECKED if is_autostart_enabled() else MF_UNCHECKED
-                            ctypes.windll.user32.CheckMenuItem(
-                                self._menu, aid, MF_BYCOMMAND | flag
-                            )
-                            break
-                    pos = POINT()
-                    GetCursorPos(ctypes.byref(pos))
-                    SetForegroundWindow(self._hwnd)
-                    TrackPopupMenu(
-                        self._menu, TPM_LEFTALIGN, pos.x, pos.y, 0, self._hwnd, None
+        for try_infi in ([True, False] if use_infi_first else [False, True]):
+            if try_infi:
+                try:
+                    from infi.systray import SysTrayIcon
+                    from infi.systray.win32_adapter import (
+                        CreatePopupMenu, POINT, GetCursorPos, SetForegroundWindow,
+                        TrackPopupMenu, PostMessage, TPM_LEFTALIGN, WM_NULL,
                     )
-                    PostMessage(self._hwnd, WM_NULL, 0, 0)
+                    import ctypes
 
-            systray = SysTrayIconWithAutostartCheckbox(
-                infi_icon_path or "",
-                hover_text,
-                menu_options,
-                on_quit=on_quit,
-                default_menu_index=0,
-            )
-            systray_ref[0] = systray
-            dt = threading.Thread(target=_dialog_worker, daemon=True)
-            dt.start()
-            update_wallpaper()
-            _update_hover_text(systray_ref)
-            t2 = threading.Thread(target=background_check, daemon=True)
-            t2.start()
-            systray.start()
-            return
-        except Exception:
-            pass
+                    MF_BYCOMMAND, MF_CHECKED, MF_UNCHECKED = 0, 0x0008, 0x0000
+
+                    class SysTrayIconWithAutostartCheckbox(SysTrayIcon):
+                        def _show_menu(self):
+                            if self._menu is None:
+                                self._menu = CreatePopupMenu()
+                                self._create_menu(self._menu, self._menu_options)
+                            for aid, action in self._menu_actions_by_id.items():
+                                if action is on_autostart_toggle:
+                                    flag = MF_CHECKED if is_autostart_enabled() else MF_UNCHECKED
+                                    ctypes.windll.user32.CheckMenuItem(
+                                        self._menu, aid, MF_BYCOMMAND | flag
+                                    )
+                                    break
+                            pos = POINT()
+                            GetCursorPos(ctypes.byref(pos))
+                            SetForegroundWindow(self._hwnd)
+                            TrackPopupMenu(
+                                self._menu, TPM_LEFTALIGN, pos.x, pos.y, 0, self._hwnd, None
+                            )
+                            PostMessage(self._hwnd, WM_NULL, 0, 0)
+
+                    systray = SysTrayIconWithAutostartCheckbox(
+                        infi_icon_path or "",
+                        hover_text,
+                        menu_options,
+                        on_quit=on_quit,
+                        default_menu_index=0,
+                    )
+                    systray_ref[0] = systray
+                    dt = threading.Thread(target=_dialog_worker, daemon=True)
+                    dt.start()
+                    update_wallpaper()
+                    _update_hover_text(systray_ref)
+                    t2 = threading.Thread(target=background_check, daemon=True)
+                    t2.start()
+                    systray.start()
+                    return
+                except Exception:
+                    pass
+            else:
+                try:
+                    _run_tray_pystray(icon_path, hover_text, last_date, background_check, _update_hover_text)
+                    return
+                except Exception:
+                    pass
 
     _run_tray_pystray(icon_path, hover_text, last_date, background_check, _update_hover_text)
 

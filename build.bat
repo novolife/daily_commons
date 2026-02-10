@@ -7,7 +7,7 @@ echo   Daily Commons Wallpaper - 打包 EXE
 echo ========================================
 echo.
 
-pip install pystray Pillow pyinstaller -q
+pip install infi.systray pystray Pillow pyinstaller -q
 if errorlevel 1 (
     echo [错误] 依赖安装失败
     pause
