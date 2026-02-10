@@ -63,6 +63,10 @@ pyinstaller --clean build.spec
 
 Output: `dist\DailyCommonsWallpaper.exe` (no console window)
 
+## Architecture
+
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - Program flow charts (Mermaid) and function reference
+
 ## Project Structure
 
 | File | Description |

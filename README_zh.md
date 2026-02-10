@@ -69,6 +69,10 @@ pyinstaller --clean build.spec
 
 生成的无控制台 exe 位于 `dist\DailyCommonsWallpaper.exe`。
 
+## 架构说明
+
+- **[ARCHITECTURE.md](ARCHITECTURE.md)** - 程序流程图（Mermaid）与函数说明
+
 ## 项目结构
 
 | 文件 | 说明 |
