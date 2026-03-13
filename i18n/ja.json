@@ -27,5 +27,14 @@
     "notify_tray_hint": "トレイに最小化しました。タスクバー ^ をクリックしてアイコンを表示",
     "menu_open_cache_folder": "キャッシュフォルダを開く",
     "msg_language_saved_title": "言語",
-    "msg_language_saved_body": "言語設定を保存しました。\n変更を反映するにはアプリを再起動してください。"
+    "msg_language_saved_body": "言語設定を保存しました。\n変更を反映するにはアプリを再起動してください。",
+    "menu_language": "言語",
+    "menu_language_system": "システム言語（自動）",
+    "menu_about": "情報",
+    "about_title": "情報",
+    "about_label_app": "アプリケーション",
+    "about_label_version": "バージョン",
+    "about_label_repo": "リポジトリ",
+    "about_label_license": "ライセンス",
+    "about_label_author": "作者"
 }

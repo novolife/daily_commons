@@ -27,5 +27,14 @@
     "notify_tray_hint": "تم تصغيره إلى علبة النظام. انقر ^ في شريط المهام",
     "menu_open_cache_folder": "فتح مجلد الذاكرة المؤقتة",
     "msg_language_saved_title": "اللغة",
-    "msg_language_saved_body": "تم حفظ تفضيل اللغة.\nيرجى إعادة تشغيل التطبيق لتطبيق التغييرات."
+    "msg_language_saved_body": "تم حفظ تفضيل اللغة.\nيرجى إعادة تشغيل التطبيق لتطبيق التغييرات.",
+    "menu_language": "اللغة",
+    "menu_language_system": "لغة النظام (تلقائيًا)",
+    "menu_about": "حول",
+    "about_title": "حول",
+    "about_label_app": "التطبيق",
+    "about_label_version": "الإصدار",
+    "about_label_repo": "المستودع",
+    "about_label_license": "الترخيص",
+    "about_label_author": "المؤلف"
 }

@@ -27,5 +27,14 @@
     "notify_tray_hint": "트레이로 최소화됨. 작업 표시줄 ^ 클릭",
     "menu_open_cache_folder": "캐시 폴더 열기",
     "msg_language_saved_title": "언어",
-    "msg_language_saved_body": "언어 설정이 저장되었습니다.\n변경 사항을 적용하려면 앱을 다시 시작하세요."
+    "msg_language_saved_body": "언어 설정이 저장되었습니다.\n변경 사항을 적용하려면 앱을 다시 시작하세요.",
+    "menu_language": "언어",
+    "menu_language_system": "시스템 언어 (자동)",
+    "menu_about": "정보",
+    "about_title": "정보",
+    "about_label_app": "애플리케이션",
+    "about_label_version": "버전",
+    "about_label_repo": "저장소",
+    "about_label_license": "라이선스",
+    "about_label_author": "작성자"
 }

@@ -27,5 +27,14 @@
     "notify_tray_hint": "Réduit dans la zone de notification. Cliquez sur ^ dans la barre des tâches",
     "menu_open_cache_folder": "Ouvrir le dossier cache",
     "msg_language_saved_title": "Langue",
-    "msg_language_saved_body": "Préférence de langue enregistrée.\nVeuillez redémarrer l'application pour appliquer les changements."
+    "msg_language_saved_body": "Préférence de langue enregistrée.\nVeuillez redémarrer l'application pour appliquer les changements.",
+    "menu_language": "Langue",
+    "menu_language_system": "Langue du système (auto)",
+    "menu_about": "À propos",
+    "about_title": "À propos",
+    "about_label_app": "Application",
+    "about_label_version": "Version",
+    "about_label_repo": "Dépôt",
+    "about_label_license": "Licence",
+    "about_label_author": "Auteur"
 }

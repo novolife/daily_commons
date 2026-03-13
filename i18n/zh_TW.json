@@ -27,5 +27,14 @@
     "notify_tray_hint": "已最小化到托盤，請點擊工作列 ^ 查看圖示",
     "menu_open_cache_folder": "開啟快取資料夾",
     "msg_language_saved_title": "語言",
-    "msg_language_saved_body": "語言偏好已儲存。\n請重新啟動應用程式以生效。"
+    "msg_language_saved_body": "語言偏好已儲存。\n請重新啟動應用程式以生效。",
+    "menu_language": "語言",
+    "menu_language_system": "依系統語言（自動）",
+    "menu_about": "關於",
+    "about_title": "關於",
+    "about_label_app": "應用程式",
+    "about_label_version": "版本",
+    "about_label_repo": "儲存庫",
+    "about_label_license": "授權條款",
+    "about_label_author": "作者"
 }

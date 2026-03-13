@@ -27,5 +27,14 @@
     "notify_tray_hint": "Ελαχιστοποιήθηκε στο δίσκο. Κλικ στο ^ στη γραμμή εργασιών",
     "menu_open_cache_folder": "Άνοιγμα φακέλου cache",
     "msg_language_saved_title": "Γλώσσα",
-    "msg_language_saved_body": "Η προτίμηση γλώσσας αποθηκεύτηκε.\nΕπανεκκινήστε την εφαρμογή για να εφαρμοστούν οι αλλαγές."
+    "msg_language_saved_body": "Η προτίμηση γλώσσας αποθηκεύτηκε.\nΕπανεκκινήστε την εφαρμογή για να εφαρμοστούν οι αλλαγές.",
+    "menu_language": "Γλώσσα",
+    "menu_language_system": "Γλώσσα συστήματος (αυτόματο)",
+    "menu_about": "Πληροφορίες",
+    "about_title": "Πληροφορίες",
+    "about_label_app": "Εφαρμογή",
+    "about_label_version": "Έκδοση",
+    "about_label_repo": "Αποθετήριο",
+    "about_label_license": "Άδεια",
+    "about_label_author": "Συγγραφέας"
 }

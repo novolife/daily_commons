@@ -105,13 +105,13 @@ def load(lang: str = None) -> dict:
     return _STRINGS
 
 
-def t(key: str, default: str = "") -> str:
+def t(key: str) -> str:
     """Get translated string by key.
 
     优先顺序：
     1. 当前语言的字符串（_STRINGS）
     2. 英文字符串（en.json）
-    3. 调用方提供的 default（通常为英文），否则回退为 key 本身
+    3. key 本身
     """
     global _EN_STRINGS, _EN_LOADED
     if not _STRINGS:
@@ -133,4 +133,4 @@ def t(key: str, default: str = "") -> str:
     if key in _EN_STRINGS:
         return _EN_STRINGS[key]
 
-    return default or key
+    return key

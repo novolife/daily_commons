@@ -27,5 +27,14 @@
     "notify_tray_hint": "Dikecilkan ke dulang. Klik ^ pada bar tugas",
     "menu_open_cache_folder": "Buka folder cache",
     "msg_language_saved_title": "Bahasa",
-    "msg_language_saved_body": "Keutamaan bahasa telah disimpan.\nSila mulakan semula aplikasi untuk menguatkuasakan perubahan."
+    "msg_language_saved_body": "Keutamaan bahasa telah disimpan.\nSila mulakan semula aplikasi untuk menguatkuasakan perubahan.",
+    "menu_language": "Bahasa",
+    "menu_language_system": "Bahasa sistem (auto)",
+    "menu_about": "Perihal",
+    "about_title": "Perihal",
+    "about_label_app": "Aplikasi",
+    "about_label_version": "Versi",
+    "about_label_repo": "Repositori",
+    "about_label_license": "Lesen",
+    "about_label_author": "Pengarang"
 }

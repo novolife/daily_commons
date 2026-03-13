@@ -27,5 +27,14 @@
     "notify_tray_hint": "Minimizzato nella barra. Clicca ^ nella taskbar",
     "menu_open_cache_folder": "Apri cartella cache",
     "msg_language_saved_title": "Lingua",
-    "msg_language_saved_body": "Preferenza della lingua salvata.\nRiavvia l'applicazione per applicare le modifiche."
+    "msg_language_saved_body": "Preferenza della lingua salvata.\nRiavvia l'applicazione per applicare le modifiche.",
+    "menu_language": "Lingua",
+    "menu_language_system": "Lingua di sistema (automatica)",
+    "menu_about": "Informazioni",
+    "about_title": "Informazioni",
+    "about_label_app": "Applicazione",
+    "about_label_version": "Versione",
+    "about_label_repo": "Repository",
+    "about_label_license": "Licenza",
+    "about_label_author": "Autore"
 }

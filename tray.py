@@ -9,6 +9,7 @@ import time
 from pathlib import Path
 
 from config import APP_NAME, CHECK_INTERVAL, ICON_FILE, WALLPAPER_DIR
+from version import __version__
 from core import (
     ensure_dir,
     get_current_wallpaper_info,
@@ -55,7 +56,7 @@ def _set_language_preference(lang_code: str):
     save_config(config)
     try:
         t = _load_i18n()
-        title = t("msg_language_saved_title", "Language")
+        title = t("msg_language_saved_title")
         message = t("msg_language_saved_body")
         _show_message_box(title, message)
     except Exception:
@@ -356,6 +357,23 @@ def run_tray_app():
     def on_open_cache_folder(systray):
         open_folder(WALLPAPER_DIR)
 
+    def _show_about_dialog():
+        t = _load_i18n()
+        app_name = t("app_name")
+        title = t("about_title")
+        lines = [
+            f"{t('about_label_app')}: {app_name}",
+            f"{t('about_label_version')}: {__version__}",
+            "GitHub: novolife/daily_commons",
+            f"{t('about_label_license')}: MIT",
+            f"{t('about_label_author')}: novolife",
+        ]
+        msg = "\n".join(lines)
+        _show_message_box(title, msg)
+
+    def on_about(systray):
+        _show_about_dialog()
+
     def _update_hover_text(systray_ref):
         s = systray_ref[0]
         if not s:
@@ -390,7 +408,7 @@ def run_tray_app():
     # 语言子菜单（infi.systray）
     lang_menu_options = tuple(
         (
-            (t("menu_language_system", label) if code == "auto" else label),
+            (t("menu_language_system") if code == "auto" else label),
             None,
             (lambda systray, code=code: _set_language_preference(code)),
         )
@@ -403,7 +421,8 @@ def run_tray_app():
         (t("menu_wallpaper_info"), None, on_show_wallpaper_info),
         (t("menu_view_commons"), None, on_open_commons),
         (t("menu_open_cache_folder"), None, on_open_cache_folder),
-        (t("menu_language", "Language / 语言"), None, lang_menu_options),
+        (t("menu_about"), None, on_about),
+        (t("menu_language"), None, lang_menu_options),
     )
 
     # exe 优先 infi.systray（打包后更稳定）；脚本优先 pystray
@@ -534,6 +553,9 @@ def _run_tray_pystray(icon_path: str, hover_text: str, last_date, background_che
     def on_open_cache_folder(_, __):
         open_folder(WALLPAPER_DIR)
 
+    def on_about_pystray(_, __):
+        _show_about_dialog()
+
     def setup(icon_obj):
         nonlocal icon
         icon = icon_obj
@@ -560,7 +582,7 @@ def _run_tray_pystray(icon_path: str, hover_text: str, last_date, background_che
             def _on_select(_, __, code=code):
                 _set_language_preference(code)
 
-            display_label = t("menu_language_system", label) if code == "auto" else label
+            display_label = t("menu_language_system") if code == "auto" else label
             items.append(pystray.MenuItem(display_label, _on_select))
         return pystray.Menu(*items)
 
@@ -571,7 +593,9 @@ def _run_tray_pystray(icon_path: str, hover_text: str, last_date, background_che
         pystray.MenuItem(t("menu_view_commons"), on_open_commons),
         pystray.MenuItem(t("menu_open_cache_folder"), on_open_cache_folder),
         pystray.Menu.SEPARATOR,
-        pystray.MenuItem(t("menu_language", "Language"), _language_menu()),
+        pystray.MenuItem(t("menu_about"), on_about_pystray),
+        pystray.Menu.SEPARATOR,
+        pystray.MenuItem(t("menu_language"), _language_menu()),
         pystray.MenuItem(t("menu_quit"), lambda _, __: icon.stop()),
     )
     # 始终用内存图标，避免中文路径等导致 Win11 托盘不显示

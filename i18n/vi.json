@@ -27,5 +27,14 @@
     "notify_tray_hint": "Đã thu nhỏ vào khay. Nhấp ^ trên thanh tác vụ",
     "menu_open_cache_folder": "Mở thư mục bộ nhớ đệm",
     "msg_language_saved_title": "Ngôn ngữ",
-    "msg_language_saved_body": "Tùy chọn ngôn ngữ đã được lưu.\nVui lòng khởi động lại ứng dụng để áp dụng thay đổi."
+    "msg_language_saved_body": "Tùy chọn ngôn ngữ đã được lưu.\nVui lòng khởi động lại ứng dụng để áp dụng thay đổi.",
+    "menu_language": "Ngôn ngữ",
+    "menu_language_system": "Ngôn ngữ hệ thống (tự động)",
+    "menu_about": "Giới thiệu",
+    "about_title": "Giới thiệu",
+    "about_label_app": "Ứng dụng",
+    "about_label_version": "Phiên bản",
+    "about_label_repo": "Kho mã",
+    "about_label_license": "Giấy phép",
+    "about_label_author": "Tác giả"
 }

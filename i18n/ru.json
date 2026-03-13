@@ -27,5 +27,14 @@
     "notify_tray_hint": "Свёрнуто в трей. Нажмите ^ на панели задач",
     "menu_open_cache_folder": "Открыть папку кэша",
     "msg_language_saved_title": "Язык",
-    "msg_language_saved_body": "Настройки языка сохранены.\nПерезапустите приложение, чтобы изменения вступили в силу."
+    "msg_language_saved_body": "Настройки языка сохранены.\nПерезапустите приложение, чтобы изменения вступили в силу.",
+    "menu_language": "Язык",
+    "menu_language_system": "Системный язык (авто)",
+    "menu_about": "О программе",
+    "about_title": "О программе",
+    "about_label_app": "Приложение",
+    "about_label_version": "Версия",
+    "about_label_repo": "Репозиторий",
+    "about_label_license": "Лицензия",
+    "about_label_author": "Автор"
 }

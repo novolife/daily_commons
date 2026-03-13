@@ -27,5 +27,14 @@
     "notify_tray_hint": "In die Taskleiste minimiert. Klicken Sie auf ^ zum Anzeigen",
     "menu_open_cache_folder": "Cache-Ordner öffnen",
     "msg_language_saved_title": "Sprache",
-    "msg_language_saved_body": "Spracheinstellung gespeichert.\nBitte starten Sie die Anwendung neu, damit die Änderungen wirksam werden."
+    "msg_language_saved_body": "Spracheinstellung gespeichert.\nBitte starten Sie die Anwendung neu, damit die Änderungen wirksam werden.",
+    "menu_language": "Sprache",
+    "menu_language_system": "Systemsprache (automatisch)",
+    "menu_about": "Info",
+    "about_title": "Info",
+    "about_label_app": "Anwendung",
+    "about_label_version": "Version",
+    "about_label_repo": "Repository",
+    "about_label_license": "Lizenz",
+    "about_label_author": "Autor"
 }
