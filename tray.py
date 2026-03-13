@@ -45,7 +45,6 @@ _LANGUAGE_OPTIONS: list[tuple[str, str]] = [
     ("ar", "العربية"),
 ]
 
-
 def _set_language_preference(lang_code: str):
     """保存语言偏好到配置文件。lang_code 为 'auto' / '' / None 时表示跟随系统。"""
     config = load_config()
@@ -229,6 +228,21 @@ def _show_message_box(title: str, message: str):
             pass
 
 
+def _show_about_dialog():
+    t = _load_i18n()
+    app_name = t("app_name")
+    title = t("about_title")
+    lines = [
+        f"{t('about_label_app')}: {app_name}",
+        f"{t('about_label_version')}: {__version__}",
+        "GitHub: novolife/daily_commons",
+        f"{t('about_label_license')}: MIT",
+        f"{t('about_label_author')}: novolife",
+    ]
+    msg = "\n".join(lines)
+    _show_message_box(title, msg)
+
+
 def _run_progress_dialog(on_complete):
     """Run progress dialog in current thread (no new threads)."""
     t = _load_i18n()
@@ -357,20 +371,6 @@ def run_tray_app():
     def on_open_cache_folder(systray):
         open_folder(WALLPAPER_DIR)
 
-    def _show_about_dialog():
-        t = _load_i18n()
-        app_name = t("app_name")
-        title = t("about_title")
-        lines = [
-            f"{t('about_label_app')}: {app_name}",
-            f"{t('about_label_version')}: {__version__}",
-            "GitHub: novolife/daily_commons",
-            f"{t('about_label_license')}: MIT",
-            f"{t('about_label_author')}: novolife",
-        ]
-        msg = "\n".join(lines)
-        _show_message_box(title, msg)
-
     def on_about(systray):
         _show_about_dialog()
 
@@ -406,11 +406,17 @@ def run_tray_app():
         hover_text = (info["title"])[:64]
 
     # 语言子菜单（infi.systray）
+    def make_lang_action(code):
+        def action(systray):
+            _set_language_preference(code)
+        action.lang_code = code
+        return action
+
     lang_menu_options = tuple(
         (
             (t("menu_language_system") if code == "auto" else label),
             None,
-            (lambda systray, code=code: _set_language_preference(code)),
+            make_lang_action(code),
         )
         for code, label in _LANGUAGE_OPTIONS
     )
@@ -421,7 +427,9 @@ def run_tray_app():
         (t("menu_wallpaper_info"), None, on_show_wallpaper_info),
         (t("menu_view_commons"), None, on_open_commons),
         (t("menu_open_cache_folder"), None, on_open_cache_folder),
+        ("-", None, None),
         (t("menu_about"), None, on_about),
+        ("-", None, None),
         (t("menu_language"), None, lang_menu_options),
     )
 
@@ -443,17 +451,60 @@ def run_tray_app():
                     MF_BYCOMMAND, MF_CHECKED, MF_UNCHECKED = 0, 0x0008, 0x0000
 
                     class SysTrayIconWithAutostartCheckbox(SysTrayIcon):
+                        def __init__(self, *args, **kwargs):
+                            super().__init__(*args, **kwargs)
+                            # 修改 infi.systray 默认写死的 'Quit' 文本
+                            # self._menu_options 中的项是 (text, icon, action, id) 结构
+                            for i, opt in enumerate(self._menu_options):
+                                if opt[0] == 'Quit' and opt[2] == SysTrayIcon.QUIT:
+                                    self._menu_options[i] = (t("menu_quit"), opt[1], opt[2], opt[3])
+
+                        def _create_menu(self, menu, menu_options):
+                            from infi.systray.win32_adapter import PackMENUITEMINFO, InsertMenuItem, CreatePopupMenu
+                            for option_text, option_icon, option_action, option_id in menu_options[::-1]:
+                                if option_text == "-":
+                                    # 插入分隔符
+                                    ctypes.windll.user32.InsertMenuW(menu, 0, 0x0400 | 0x0800, 0, None)
+                                    continue
+
+                                if option_icon:
+                                    option_icon = self._prep_menu_icon(option_icon)
+
+                                if option_id in self._menu_actions_by_id:
+                                    item = PackMENUITEMINFO(text=option_text,
+                                                            hbmpItem=option_icon,
+                                                            wID=option_id)
+                                    InsertMenuItem(menu, 0, 1, ctypes.byref(item))
+                                else:
+                                    submenu = CreatePopupMenu()
+                                    self._create_menu(submenu, option_action)
+                                    item = PackMENUITEMINFO(text=option_text,
+                                                            hbmpItem=option_icon,
+                                                            hSubMenu=submenu)
+                                    InsertMenuItem(menu, 0, 1, ctypes.byref(item))
+
                         def _show_menu(self):
                             if self._menu is None:
                                 self._menu = CreatePopupMenu()
                                 self._create_menu(self._menu, self._menu_options)
+                            
+                            from core import load_config
+                            lang_pref = load_config().get("language", "auto")
+
                             for aid, action in self._menu_actions_by_id.items():
                                 if action is on_autostart_toggle:
                                     flag = MF_CHECKED if is_autostart_enabled() else MF_UNCHECKED
                                     ctypes.windll.user32.CheckMenuItem(
                                         self._menu, aid, MF_BYCOMMAND | flag
                                     )
-                                    break
+                                elif getattr(action, "lang_code", None) is not None:
+                                    flag = MF_CHECKED if action.lang_code == lang_pref else MF_UNCHECKED
+                                    # 针对子菜单也能用 MF_BYCOMMAND
+                                    ctypes.windll.user32.CheckMenuItem(
+                                        self._menu, aid, MF_BYCOMMAND | flag
+                                    )
+                                    # Win32 原生菜单的单选效果可以通过 CheckMenuRadioItem 实现，这里简单用 CheckMenuItem
+
                             pos = POINT()
                             GetCursorPos(ctypes.byref(pos))
                             SetForegroundWindow(self._hwnd)
@@ -554,12 +605,18 @@ def _run_tray_pystray(icon_path: str, hover_text: str, last_date, background_che
         open_folder(WALLPAPER_DIR)
 
     def on_about_pystray(_, __):
-        _show_about_dialog()
+        # 让托盘菜单回调先返回，避免在 pystray 的消息处理线程中同步弹出模态框
+        threading.Thread(
+            target=_show_about_dialog,
+            name="AboutDialogThread",
+            daemon=True,
+        ).start()
 
     def setup(icon_obj):
         nonlocal icon
         icon = icon_obj
         systray_ref[0] = icon
+        icon.visible = True
         threading.Thread(target=_dialog_worker, daemon=True).start()
         update_wallpaper()
         _update_hover_text(systray_ref)
@@ -578,12 +635,23 @@ def _run_tray_pystray(icon_path: str, hover_text: str, last_date, background_che
     # 语言子菜单（pystray）
     def _language_menu():
         items = []
-        for code, label in _LANGUAGE_OPTIONS:
-            def _on_select(_, __, code=code):
-                _set_language_preference(code)
 
+        def make_action(c):
+            return lambda icon, item: _set_language_preference(c)
+
+        def make_checked(c):
+            return lambda item: c == load_config().get("language", "auto")
+
+        for code, label in _LANGUAGE_OPTIONS:
             display_label = t("menu_language_system") if code == "auto" else label
-            items.append(pystray.MenuItem(display_label, _on_select))
+            # 使用 checked 属性来显示当前选中的语言 (使用 radio 属性使其表现为单选)
+            # 在 checked 的 lambda 中实时读取 config，以便切换后能立即反映
+            items.append(pystray.MenuItem(
+                display_label, 
+                make_action(code), 
+                radio=True, 
+                checked=make_checked(code)
+            ))
         return pystray.Menu(*items)
 
     menu = pystray.Menu(
