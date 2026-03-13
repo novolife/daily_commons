@@ -10,7 +10,7 @@ import time
 from datetime import datetime
 from pathlib import Path
 from urllib.parse import quote, urlencode
-from urllib.request import Request, urlopen
+from urllib.request import Request, build_opener
 from urllib.error import URLError, HTTPError
 
 from config import (
@@ -51,11 +51,22 @@ def _strip_html(text: str) -> str:
     return re.sub(r"<[^>]+>", "", text).strip()
 
 
+def _open_with_proxies(req: Request, timeout: float):
+    """Open HTTP request using current proxy settings.
+
+    urllib 的全局 opener 只会在第一次调用时读取代理配置。
+    为了支持“先启动程序、后启用系统代理/环境变量”的场景，这里每次请求都重新
+    使用 build_opener()，从而让 getproxies() 读取到最新的代理设置。
+    """
+    opener = build_opener()  # uses current getproxies() (env + Windows 代理设置)
+    return opener.open(req, timeout=timeout)
+
+
 def _fetch_with_retry(req: Request, max_retries: int = 4, base_delay: float = 3.0):
     """Fetch with retry (for boot when network may not be ready)."""
     for attempt in range(max_retries):
         try:
-            with urlopen(req, timeout=30) as resp:
+            with _open_with_proxies(req, timeout=30) as resp:
                 return json.loads(resp.read().decode())
         except (URLError, HTTPError, OSError):
             if attempt < max_retries - 1:
@@ -117,7 +128,7 @@ def fetch_image_metadata(file_title: str) -> dict:
     url = f"{API_URL}?{urlencode(params)}"
     req = Request(url, headers={"User-Agent": "DailyCommonsWallpaper/1.0"})
     try:
-        with urlopen(req, timeout=15) as resp:
+        with _open_with_proxies(req, timeout=15) as resp:
             data = json.loads(resp.read().decode())
         pages = data.get("query", {}).get("pages", {})
         for page in pages.values():
@@ -142,7 +153,7 @@ def download_image(url: str, filepath: Path, progress_callback=None, max_retries
     for attempt in range(max_retries):
         try:
             req = Request(url, headers={"User-Agent": "DailyCommonsWallpaper/1.0"})
-            with urlopen(req, timeout=60) as resp:
+            with _open_with_proxies(req, timeout=60) as resp:
                 total = int(resp.headers.get("Content-Length", 0) or 0)
                 data = []
                 read = 0
@@ -224,15 +235,20 @@ def update_wallpaper(force_refresh: bool = False, progress_callback=None) -> boo
     if not force_refresh:
         is_today, cache = _is_cache_from_today()
         if is_today:
+            # 自动模式：若已存在今日壁纸，直接复用即可视为成功
             set_wallpaper(Path(cache["path"]))
             return True
     else:
+        # 手动刷新时仅作为“回退信息”读取缓存，不应把旧壁纸当作成功结果
         _, cache = _is_cache_from_today()
 
     _report("fetching", 0)
     images = fetch_images_from_commons(limit=500)
     if not images:
-        if cache and Path(cache.get("path", "")).exists():
+        # 网络或代理异常时：
+        # - 自动模式：若有旧缓存，已经在前面直接复用并返回 True
+        # - 手动刷新：此时应该明确返回 False，而不是用旧壁纸伪装“更新成功”
+        if not force_refresh and cache and Path(cache.get("path", "")).exists():
             set_wallpaper(Path(cache["path"]))
             return True
         return False
