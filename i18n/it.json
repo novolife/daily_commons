@@ -25,5 +25,7 @@
     "notify_autostart_on": "Avvio automatico attivato",
     "notify_autostart_off": "Avvio automatico disattivato",
     "notify_tray_hint": "Minimizzato nella barra. Clicca ^ nella taskbar",
-    "menu_open_cache_folder": "Apri cartella cache"
+    "menu_open_cache_folder": "Apri cartella cache",
+    "msg_language_saved_title": "Lingua",
+    "msg_language_saved_body": "Preferenza della lingua salvata.\nRiavvia l'applicazione per applicare le modifiche."
 }

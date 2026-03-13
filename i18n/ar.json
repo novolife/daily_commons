@@ -25,5 +25,7 @@
     "notify_autostart_on": "تم تفعيل بدء التشغيل التلقائي",
     "notify_autostart_off": "تم إلغاء بدء التشغيل التلقائي",
     "notify_tray_hint": "تم تصغيره إلى علبة النظام. انقر ^ في شريط المهام",
-    "menu_open_cache_folder": "فتح مجلد الذاكرة المؤقتة"
+    "menu_open_cache_folder": "فتح مجلد الذاكرة المؤقتة",
+    "msg_language_saved_title": "اللغة",
+    "msg_language_saved_body": "تم حفظ تفضيل اللغة.\nيرجى إعادة تشغيل التطبيق لتطبيق التغييرات."
 }

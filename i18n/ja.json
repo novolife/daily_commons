@@ -25,5 +25,7 @@
     "notify_autostart_on": "起動時自動開始を有効にしました",
     "notify_autostart_off": "起動時自動開始を無効にしました",
     "notify_tray_hint": "トレイに最小化しました。タスクバー ^ をクリックしてアイコンを表示",
-    "menu_open_cache_folder": "キャッシュフォルダを開く"
+    "menu_open_cache_folder": "キャッシュフォルダを開く",
+    "msg_language_saved_title": "言語",
+    "msg_language_saved_body": "言語設定を保存しました。\n変更を反映するにはアプリを再起動してください。"
 }

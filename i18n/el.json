@@ -25,5 +25,7 @@
     "notify_autostart_on": "Η αυτόματη εκκίνηση ενεργοποιήθηκε",
     "notify_autostart_off": "Η αυτόματη εκκίνηση απενεργοποιήθηκε",
     "notify_tray_hint": "Ελαχιστοποιήθηκε στο δίσκο. Κλικ στο ^ στη γραμμή εργασιών",
-    "menu_open_cache_folder": "Άνοιγμα φακέλου cache"
+    "menu_open_cache_folder": "Άνοιγμα φακέλου cache",
+    "msg_language_saved_title": "Γλώσσα",
+    "msg_language_saved_body": "Η προτίμηση γλώσσας αποθηκεύτηκε.\nΕπανεκκινήστε την εφαρμογή για να εφαρμοστούν οι αλλαγές."
 }

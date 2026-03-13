@@ -25,5 +25,7 @@
     "notify_autostart_on": "Автозапуск включён",
     "notify_autostart_off": "Автозапуск выключен",
     "notify_tray_hint": "Свёрнуто в трей. Нажмите ^ на панели задач",
-    "menu_open_cache_folder": "Открыть папку кэша"
+    "menu_open_cache_folder": "Открыть папку кэша",
+    "msg_language_saved_title": "Язык",
+    "msg_language_saved_body": "Настройки языка сохранены.\nПерезапустите приложение, чтобы изменения вступили в силу."
 }

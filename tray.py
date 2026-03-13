@@ -27,7 +27,7 @@ def _load_i18n():
 
 # 可选语言列表（用于语言菜单和配置）
 _LANGUAGE_OPTIONS: list[tuple[str, str]] = [
-    ("auto", "System / 自动"),
+    ("auto", "System"),
     ("en", "English"),
     ("zh_CN", "简体中文"),
     ("zh_TW", "繁體中文"),
@@ -36,7 +36,6 @@ _LANGUAGE_OPTIONS: list[tuple[str, str]] = [
     ("de", "Deutsch"),
     ("ru", "Русский"),
     ("es", "Español"),
-    ("es_MX", "Español (México)"),
     ("it", "Italiano"),
     ("vi", "Tiếng Việt"),
     ("ko", "한국어"),
@@ -54,12 +53,11 @@ def _set_language_preference(lang_code: str):
     else:
         config["language"] = lang_code
     save_config(config)
-    # 简单提示，语言变更需要重启后生效
     try:
-        _show_message_box(
-            "Language",
-            "Language preference saved.\nPlease restart the app to apply.\n\n语言偏好已保存，重启应用后生效。",
-        )
+        t = _load_i18n()
+        title = t("msg_language_saved_title", "Language")
+        message = t("msg_language_saved_body")
+        _show_message_box(title, message)
     except Exception:
         pass
 
@@ -115,6 +113,64 @@ def set_autostart(enabled: bool) -> bool:
             winreg.CloseKey(key)
     except Exception:
         return False
+
+
+def sync_autostart_with_config():
+    """在程序启动时，根据配置文件校准注册表中的开机自启设置。
+
+    规则：
+    - config['autostart'] 为 False/缺失，且注册表有值 -> 删除注册表值
+    - config['autostart'] 为 True，注册表无值 -> 写入当前 exe 路径
+    - config['autostart'] 为 True，注册表有值但路径与当前 exe 不一致 -> 更新为当前 exe 路径
+    """
+    if sys.platform != "win32":
+        return
+    try:
+        import winreg
+        from config import get_exe_path
+
+        cfg = load_config()
+        want_autostart = bool(cfg.get("autostart"))
+        current_path = get_exe_path()
+        desired_value = f'"{current_path}"'
+
+        key = winreg.OpenKey(
+            winreg.HKEY_CURRENT_USER,
+            r"Software\Microsoft\Windows\CurrentVersion\Run",
+            0,
+            winreg.KEY_READ | winreg.KEY_SET_VALUE,
+        )
+        try:
+            try:
+                existing_value, _ = winreg.QueryValueEx(key, APP_NAME)
+            except FileNotFoundError:
+                existing_value = None
+
+            if not want_autostart:
+                # 配置关闭自动启动但注册表有值 -> 删除注册表值
+                if existing_value is not None:
+                    try:
+                        winreg.DeleteValue(key, APP_NAME)
+                    except FileNotFoundError:
+                        pass
+                return
+
+            # 需要自动启动：如果没有值，或路径不一致，则写入/更新
+            def _normalize(v: str | None) -> str:
+                if not v:
+                    return ""
+                v = v.strip()
+                if v.startswith('"') and v.endswith('"') and len(v) >= 2:
+                    v = v[1:-1]
+                return v
+
+            if existing_value is None or _normalize(existing_value) != _normalize(desired_value):
+                winreg.SetValueEx(key, APP_NAME, 0, winreg.REG_SZ, desired_value)
+        finally:
+            winreg.CloseKey(key)
+    except Exception:
+        # 出错时静默失败，不影响主逻辑
+        return
 
 
 def create_tray_icon_file() -> Path:
@@ -221,6 +277,12 @@ def _run_progress_dialog(on_complete):
 
 
 def run_tray_app():
+    # 启动时先根据配置校准开机自启注册表
+    try:
+        sync_autostart_with_config()
+    except Exception:
+        pass
+
     # 根据配置优先设置语言（若未设置则跟随系统）
     try:
         from i18n.loader import load as _i18n_load
@@ -482,8 +544,9 @@ def _run_tray_pystray(icon_path: str, hover_text: str, last_date, background_che
         threading.Thread(target=background_check, daemon=True).start()
         # Win11 图标常在折叠区，启动时提示用户
         try:
-            hint = t("notify_tray_hint", "已最小化到托盘，请点击任务栏 ^ 查看图标")
-            icon.notify(hint, APP_NAME)
+            hint = t("notify_tray_hint")
+            if hint:
+                icon.notify(hint, APP_NAME)
         except Exception:
             pass
 
@@ -508,7 +571,7 @@ def _run_tray_pystray(icon_path: str, hover_text: str, last_date, background_che
         pystray.MenuItem(t("menu_view_commons"), on_open_commons),
         pystray.MenuItem(t("menu_open_cache_folder"), on_open_cache_folder),
         pystray.Menu.SEPARATOR,
-        pystray.MenuItem(t("menu_language", "Language / 语言"), _language_menu()),
+        pystray.MenuItem(t("menu_language", "Language"), _language_menu()),
         pystray.MenuItem(t("menu_quit"), lambda _, __: icon.stop()),
     )
     # 始终用内存图标，避免中文路径等导致 Win11 托盘不显示

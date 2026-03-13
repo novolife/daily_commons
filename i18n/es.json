@@ -25,5 +25,7 @@
     "notify_autostart_on": "Inicio automático activado",
     "notify_autostart_off": "Inicio automático desactivado",
     "notify_tray_hint": "Minimizado a la bandeja. Clic en ^ en la barra de tareas",
-    "menu_open_cache_folder": "Abrir carpeta de caché"
+    "menu_open_cache_folder": "Abrir carpeta de caché",
+    "msg_language_saved_title": "Idioma",
+    "msg_language_saved_body": "Preferencia de idioma guardada.\nReinicia la aplicación para aplicar los cambios."
 }

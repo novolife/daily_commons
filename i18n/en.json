@@ -25,5 +25,7 @@
     "notify_autostart_on": "Autostart enabled",
     "notify_autostart_off": "Autostart disabled",
     "notify_tray_hint": "Minimized to tray. Click taskbar ^ to view icon",
-    "menu_open_cache_folder": "Open Cache Folder"
+    "menu_open_cache_folder": "Open Cache Folder",
+    "msg_language_saved_title": "Language",
+    "msg_language_saved_body": "Language preference saved.\nPlease restart the app to apply."
 }

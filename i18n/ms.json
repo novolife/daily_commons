@@ -25,5 +25,7 @@
     "notify_autostart_on": "Autostart dihidupkan",
     "notify_autostart_off": "Autostart dimatikan",
     "notify_tray_hint": "Dikecilkan ke dulang. Klik ^ pada bar tugas",
-    "menu_open_cache_folder": "Buka folder cache"
+    "menu_open_cache_folder": "Buka folder cache",
+    "msg_language_saved_title": "Bahasa",
+    "msg_language_saved_body": "Keutamaan bahasa telah disimpan.\nSila mulakan semula aplikasi untuk menguatkuasakan perubahan."
 }

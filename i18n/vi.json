@@ -25,5 +25,7 @@
     "notify_autostart_on": "Đã bật khởi động cùng Windows",
     "notify_autostart_off": "Đã tắt khởi động cùng Windows",
     "notify_tray_hint": "Đã thu nhỏ vào khay. Nhấp ^ trên thanh tác vụ",
-    "menu_open_cache_folder": "Mở thư mục bộ nhớ đệm"
+    "menu_open_cache_folder": "Mở thư mục bộ nhớ đệm",
+    "msg_language_saved_title": "Ngôn ngữ",
+    "msg_language_saved_body": "Tùy chọn ngôn ngữ đã được lưu.\nVui lòng khởi động lại ứng dụng để áp dụng thay đổi."
 }

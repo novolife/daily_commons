@@ -25,5 +25,7 @@
     "notify_autostart_on": "Autostart aktiviert",
     "notify_autostart_off": "Autostart deaktiviert",
     "notify_tray_hint": "In die Taskleiste minimiert. Klicken Sie auf ^ zum Anzeigen",
-    "menu_open_cache_folder": "Cache-Ordner öffnen"
+    "menu_open_cache_folder": "Cache-Ordner öffnen",
+    "msg_language_saved_title": "Sprache",
+    "msg_language_saved_body": "Spracheinstellung gespeichert.\nBitte starten Sie die Anwendung neu, damit die Änderungen wirksam werden."
 }

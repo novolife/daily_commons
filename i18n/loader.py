@@ -8,6 +8,8 @@ from pathlib import Path
 
 _STRINGS = {}
 _LANG = "en"
+_EN_STRINGS = {}
+_EN_LOADED = False
 
 
 def _get_i18n_dir() -> Path:
@@ -33,7 +35,6 @@ _WIN_LANGID_MAP = {
     0x0407: "de",      # de-DE German
     0x0419: "ru",      # ru-RU Russian
     0x0c0a: "es",      # es-ES Spanish (Spain)
-    0x080a: "es_MX",   # es-MX Spanish (Mexico)
     0x0410: "it",      # it-IT Italian
     0x042a: "vi",      # vi-VN Vietnamese
     0x0412: "ko",      # ko-KR Korean
@@ -105,7 +106,31 @@ def load(lang: str = None) -> dict:
 
 
 def t(key: str, default: str = "") -> str:
-    """Get translated string by key."""
+    """Get translated string by key.
+
+    优先顺序：
+    1. 当前语言的字符串（_STRINGS）
+    2. 英文字符串（en.json）
+    3. 调用方提供的 default（通常为英文），否则回退为 key 本身
+    """
+    global _EN_STRINGS, _EN_LOADED
     if not _STRINGS:
         load()
-    return _STRINGS.get(key, default or key)
+    if key in _STRINGS:
+        return _STRINGS[key]
+
+    # 尝试加载英文作为通用回退
+    if not _EN_LOADED:
+        i18n_dir = _get_i18n_dir()
+        path = i18n_dir / "en.json"
+        if path.exists():
+            try:
+                with open(path, encoding="utf-8") as f:
+                    _EN_STRINGS = json.load(f)
+            except Exception:
+                _EN_STRINGS = {}
+        _EN_LOADED = True
+    if key in _EN_STRINGS:
+        return _EN_STRINGS[key]
+
+    return default or key

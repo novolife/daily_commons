@@ -25,5 +25,7 @@
     "notify_autostart_on": "Démarrage auto activé",
     "notify_autostart_off": "Démarrage auto désactivé",
     "notify_tray_hint": "Réduit dans la zone de notification. Cliquez sur ^ dans la barre des tâches",
-    "menu_open_cache_folder": "Ouvrir le dossier cache"
+    "menu_open_cache_folder": "Ouvrir le dossier cache",
+    "msg_language_saved_title": "Langue",
+    "msg_language_saved_body": "Préférence de langue enregistrée.\nVeuillez redémarrer l'application pour appliquer les changements."
 }

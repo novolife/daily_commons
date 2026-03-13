@@ -25,5 +25,7 @@
     "notify_autostart_on": "開機自啟已開啟",
     "notify_autostart_off": "開機自啟已關閉",
     "notify_tray_hint": "已最小化到托盤，請點擊工作列 ^ 查看圖示",
-    "menu_open_cache_folder": "開啟快取資料夾"
+    "menu_open_cache_folder": "開啟快取資料夾",
+    "msg_language_saved_title": "語言",
+    "msg_language_saved_body": "語言偏好已儲存。\n請重新啟動應用程式以生效。"
 }

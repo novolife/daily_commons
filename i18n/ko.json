@@ -25,5 +25,7 @@
     "notify_autostart_on": "자동 시작 사용",
     "notify_autostart_off": "자동 시작 사용 안 함",
     "notify_tray_hint": "트레이로 최소화됨. 작업 표시줄 ^ 클릭",
-    "menu_open_cache_folder": "캐시 폴더 열기"
+    "menu_open_cache_folder": "캐시 폴더 열기",
+    "msg_language_saved_title": "언어",
+    "msg_language_saved_body": "언어 설정이 저장되었습니다.\n변경 사항을 적용하려면 앱을 다시 시작하세요."
 }
