@@ -637,7 +637,15 @@ def _run_tray_pystray(icon_path: str, hover_text: str, last_date, background_che
         items = []
 
         def make_action(c):
-            return lambda icon, item: _set_language_preference(c)
+            # 在独立线程中执行语言保存与消息框，避免阻塞 pystray 菜单回调线程
+            def action(icon, item):
+                threading.Thread(
+                    target=_set_language_preference,
+                    args=(c,),
+                    daemon=True,
+                ).start()
+
+            return action
 
         def make_checked(c):
             return lambda item: c == load_config().get("language", "auto")
