@@ -243,6 +243,22 @@ def _show_about_dialog():
     _show_message_box(title, msg)
 
 
+def _show_wallpaper_info_dialog():
+    """在独立线程中调用，避免在托盘菜单回调线程中弹模态框导致确认无响应。"""
+    t = _load_i18n()
+    info = get_current_wallpaper_info()
+    title = t("info_wallpaper_info")
+    if not info:
+        _show_message_box(title, t("info_no_wallpaper"))
+        return
+    title_str = (info.get("title") or t("info_unknown"))[:50]
+    desc = (info.get("description") or "")[:80]
+    artist = (info.get("artist") or "").strip() or t("info_unknown")
+    license_ = info.get("license") or t("info_unknown")
+    msg = f"{t('info_title')}: {title_str}\n{t('info_description')}: {desc}\n{t('info_artist')}: {artist}\n{t('info_license')}: {license_}"
+    _show_message_box(title, msg)
+
+
 def _run_progress_dialog(on_complete):
     """Run progress dialog in current thread (no new threads)."""
     t = _load_i18n()
@@ -352,16 +368,7 @@ def run_tray_app():
             pass  # _notify removed
 
     def on_show_wallpaper_info(systray):
-        info = get_current_wallpaper_info()
-        if not info:
-            _show_message_box(t("info_wallpaper_info"), t("info_no_wallpaper"))
-            return
-        title = (info.get("title") or t("info_unknown"))[:50]
-        desc = (info.get("description") or "")[:80]
-        artist = (info.get("artist") or "").strip() or t("info_unknown")
-        license_ = info.get("license") or t("info_unknown")
-        msg = f"{t('info_title')}: {title}\n{t('info_description')}: {desc}\n{t('info_artist')}: {artist}\n{t('info_license')}: {license_}"
-        _show_message_box(t("info_wallpaper_info"), msg)
+        threading.Thread(target=_show_wallpaper_info_dialog, daemon=True).start()
 
     def on_open_commons(systray):
         info = get_current_wallpaper_info()
@@ -372,7 +379,7 @@ def run_tray_app():
         open_folder(WALLPAPER_DIR)
 
     def on_about(systray):
-        _show_about_dialog()
+        threading.Thread(target=_show_about_dialog, daemon=True).start()
 
     def _update_hover_text(systray_ref):
         s = systray_ref[0]
@@ -405,10 +412,10 @@ def run_tray_app():
     if info.get("title"):
         hover_text = (info["title"])[:64]
 
-    # 语言子菜单（infi.systray）
+    # 语言子菜单（infi.systray）：在独立线程中保存并弹提示框，避免确认无响应
     def make_lang_action(code):
         def action(systray):
-            _set_language_preference(code)
+            threading.Thread(target=_set_language_preference, args=(code,), daemon=True).start()
         action.lang_code = code
         return action
 
@@ -588,13 +595,7 @@ def _run_tray_pystray(icon_path: str, hover_text: str, last_date, background_che
                 icon.update_menu()
 
     def on_show_info(_, __):
-        info = get_current_wallpaper_info()
-        if info:
-            title = (info.get("title") or t("info_unknown"))[:50]
-            artist = (info.get("artist") or "").strip() or t("info_unknown")
-            license_ = info.get("license") or t("info_unknown")
-            msg = f"{t('info_title')}: {title}\n{t('info_artist')}: {artist}\n{t('info_license')}: {license_}"
-            _show_message_box(t("info_wallpaper_info"), msg)
+        threading.Thread(target=_show_wallpaper_info_dialog, daemon=True).start()
 
     def on_open_commons(_, __):
         info = get_current_wallpaper_info()
